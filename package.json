@@ -2,11 +2,11 @@
   "name": "every-cell-is-code",
   "version": "1.0.0",
   "description": "An infinite canvas where every cell is a live JavaScript worker",
-  "main": "public/index.html",
+  "main": "docs/index.html",
   "type": "module",
   "scripts": {
-    "dev": "browser-sync start --server public --no-open -w --no-ui",
-    "dev-public": "browser-sync start --server public --no-open -w --no-ui --tunnel",
+    "dev": "browser-sync start --server docs --no-open -w --no-ui",
+    "dev-public": "browser-sync start --server docs --no-open -w --no-ui --tunnel",
     "prepare": "husky"
   },
   "author": {
