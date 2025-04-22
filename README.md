@@ -4,6 +4,8 @@
 Each block can render graphics, communicate with its neighbors, and evolve over time.
 Together, they form a programmable universe — decentralized, reactive, and alive.
 
+**Try it out here:** [https://pavel-voronin.github.io/every-cell-is-code/](https://pavel-voronin.github.io/every-cell-is-code/)
+
 ---
 
 ## 🚧 Roadmap
