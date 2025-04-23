@@ -1,5 +1,7 @@
 # Every Cell is Code
 
+[Discord server](https://discord.gg/fSMwfn8sKw)
+
 **Every Cell is Code** is an infinite grid where each cell is a living JavaScript block — a self-contained WebWorker with its own canvas.
 Each block can render graphics, communicate with its neighbors, and evolve over time.
 Together, they form a programmable universe — decentralized, reactive, and alive.
@@ -11,6 +13,8 @@ Together, they form a programmable universe — decentralized, reactive, and ali
 ## 🚧 Roadmap
 
 - [ ] Security: static AST analysis, sandboxing, no external communication
+- [ ] **Codebase maturity:** refactor MVP, improve architecture, clean up and stabilize core logic
+- [ ] Grid navigation
 - [ ] Describe the API
 - [ ] Chunked loading of blocks
 - [ ] Authentication
@@ -30,6 +34,8 @@ Create your own block and drop it onto the grid!
 ---
 
 ## 🤝 Join the Community
+
+Join us on our [Discord server](https://discord.gg/fSMwfn8sKw)
 
 We’re building a creative space where code becomes pixels, behavior, neighbors, and art. 🎨✨
 
