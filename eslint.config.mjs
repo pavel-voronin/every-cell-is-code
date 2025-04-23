@@ -5,10 +5,14 @@ import eslintConfigPrettier from "eslint-config-prettier/flat";
 
 export default defineConfig([
   {
+    linterOptions: {
+      reportUnusedDisableDirectives: false,
+    },
+  },
+  {
     files: ["**/*.{js,mjs,cjs}"],
     plugins: { js },
     extends: ["js/recommended"],
-    reportUnusedDisableDirectives: false,
   },
   {
     files: ["**/*.{js,mjs,cjs}"],
