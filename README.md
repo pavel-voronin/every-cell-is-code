@@ -27,8 +27,8 @@ Together, they form a programmable universe — decentralized, reactive, and ali
 
 Create your own block and drop it onto the grid!
 
-1. Write a JavaScript worker and place it next to `index.html`.
-2. In `index.html`, pick any free coordinates and register your block.
+1. Write a JavaScript worker and place it next to `src/public/workers` folder.
+2. In `src/script/main.ts`, pick any free coordinates and register your block.
 3. Submit a PR to share your block with the world 🌍
 
 ---

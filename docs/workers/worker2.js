@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 let wCells, hCells, width, height, ctx;
 
 self.onmessage = (e) => {
@@ -14,7 +14,10 @@ self.onmessage = (e) => {
   }
 };
 
-const dirs = [['n', 'e'], ['n', 's']];
+const dirs = [
+  ['n', 'e'],
+  ['n', 's'],
+];
 let di = 0;
 
 function draw() {

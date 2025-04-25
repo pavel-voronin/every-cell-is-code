@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 let wCells, hCells, width, height, ctx;
 let flashState = 'idle'; // 'idle', 'flashing', 'fading'
 let flashAlpha = 0;
