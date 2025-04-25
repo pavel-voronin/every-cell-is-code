@@ -23,37 +23,36 @@ export class GridManager {
       const mx = e.offsetX / scale + offsetX;
       const my = e.offsetY / scale + offsetY;
 
-      for (const b of this.blockManager.getBlocks().values()) {
-        const bx = b.x * CELL_SIZE;
-        const by = b.y * CELL_SIZE;
-        const bw = b.w * CELL_SIZE;
-        const bh = b.h * CELL_SIZE;
+      for (const block of this.blockManager.getBlocks()) {
+        const bx = block.x * CELL_SIZE;
+        const by = block.y * CELL_SIZE;
+        const bw = block.w * CELL_SIZE;
+        const bh = block.h * CELL_SIZE;
         const rx = mx - bx;
         const ry = my - by;
 
         if (rx >= 0 && rx <= bw && ry >= 0 && ry <= bh) {
-          const eventId = b.requestEventId();
+          const eventId = block.requestEventId();
 
           const promise = new Promise((resolve) => {
             const timeout = setTimeout(() => {
-              b.pendingEvents.delete(eventId);
+              block.dropPendingEvent(eventId);
               resolve(false);
             }, 50);
 
-            b.pendingEvents.set(eventId, (intercepted: boolean) => {
+            block.addPendingEvent(eventId, (intercepted: boolean) => {
               clearTimeout(timeout);
               resolve(intercepted);
             });
           });
 
-          b.postMessage({
+          block.postMessage({
             type: 'click',
-            x: rx,
-            y: ry,
-            eventId,
+            payload: { x: rx, y: ry, eventId },
           });
 
           const intercepted = await promise;
+
           if (intercepted) return;
         }
       }
@@ -181,19 +180,21 @@ export class GridManager {
           const my = touchStartY - canvas.getBoundingClientRect().top;
           const normX = mx / scale + offsetX;
           const normY = my / scale + offsetY;
-          for (const b of this.blockManager.getBlocks().values()) {
-            const bx = b.x * CELL_SIZE;
-            const by = b.y * CELL_SIZE;
-            const bw = b.w * CELL_SIZE;
-            const bh = b.h * CELL_SIZE;
+
+          for (const block of this.blockManager.getBlocks()) {
+            const bx = block.x * CELL_SIZE;
+            const by = block.y * CELL_SIZE;
+            const bw = block.w * CELL_SIZE;
+            const bh = block.h * CELL_SIZE;
             const rx = normX - bx;
             const ry = normY - by;
             if (rx >= 0 && rx <= bw && ry >= 0 && ry <= bh) {
-              b.postMessage({ type: 'click', x: rx, y: ry });
+              block.postMessage({ type: 'click', payload: { x: rx, y: ry } });
               break;
             }
           }
         }
+
         if (t.length === 1) {
           // Continue drag with remaining finger
           isPinching = false;
@@ -237,12 +238,16 @@ export class GridManager {
       }
     }
 
-    for (const b of this.blockManager.getBlocks().values()) {
-      const px = (b.x * CELL_SIZE - offsetX) * scale;
-      const py = (b.y * CELL_SIZE - offsetY) * scale;
-      b.domCanvas.style.transform = `translate(${px}px, ${py}px)`;
-      b.domCanvas.style.width = `${b.w * CELL_SIZE * scale}px`;
-      b.domCanvas.style.height = `${b.h * CELL_SIZE * scale}px`;
+    for (const block of this.blockManager.getBlocks()) {
+      const px = (block.x * CELL_SIZE - offsetX) * scale;
+      const py = (block.y * CELL_SIZE - offsetY) * scale;
+
+      block.setCanvasPosition(
+        px,
+        py,
+        block.w * CELL_SIZE * scale,
+        block.h * CELL_SIZE * scale,
+      );
     }
 
     this.ctx.restore();

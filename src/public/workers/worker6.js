@@ -31,7 +31,7 @@ function handle(e) {
   if (
     e.data.type === 'message' &&
     e.data.payload &&
-    e.data.payload.type === 'UpdateScore'
+    e.data.payload.command === 'UpdateScore'
   ) {
     score = e.data.payload.score;
     draw();

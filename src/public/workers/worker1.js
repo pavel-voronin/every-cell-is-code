@@ -32,10 +32,14 @@ function changeColor() {
 }
 
 function handle(e) {
-  if (e.data.type === 'message' && e.data.payload === 'ChangeColor') {
+  if (
+    e.data.type === 'message' &&
+    e.data.payload &&
+    e.data.payload.command === 'ChangeColor'
+  ) {
     changeColor();
   } else if (e.data.type === 'click') {
-    const { x, y, eventId } = e.data;
+    const { x, y, eventId } = e.data.payload;
 
     var intercepted = false;
 
@@ -47,6 +51,6 @@ function handle(e) {
       intercepted = true;
     }
 
-    postMessage({ type: 'intercept', eventId, intercepted });
+    postMessage({ type: 'intercepted', payload: { eventId, intercepted } });
   }
 }

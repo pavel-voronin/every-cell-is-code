@@ -1,17 +1,26 @@
+type MetaPointCoords = `${MetaPoint['x']},${MetaPoint['y']}`; // todo sync with Block coords
+
+type MetaPoint = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  src: string;
+};
+
 export class MetaStore {
-  origins = new Map();
-  index = new Map();
+  protected origins = new Map<MetaPointCoords, MetaPoint>();
+  protected index = new Map<string, string>();
 
   addBlockMeta(x: number, y: number, w: number, h: number, src: string) {
-    const originKey = `${x},${y}`;
+    const originKey: MetaPointCoords = `${x},${y}`;
 
     this.origins.set(originKey, {
       x,
       y,
-      src,
       w,
       h,
-      block: null,
+      src,
     });
 
     for (let dx = 0; dx < w; dx++) {
@@ -24,6 +33,8 @@ export class MetaStore {
 
   getBlockMeta(x: number, y: number) {
     const originKey = this.index.get(`${x},${y}`);
-    return originKey ? this.origins.get(originKey) : null;
+    return originKey
+      ? this.origins.get(originKey as MetaPointCoords)
+      : undefined;
   }
 }

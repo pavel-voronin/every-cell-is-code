@@ -62,26 +62,35 @@ function startGame() {
 function gameOver() {
   gameState = 'gameover';
   if (score > bestScore) bestScore = score;
-  postMessage({ type: 'message', payload: { type: 'UpdateScore', score } });
+  postMessage({ type: 'message', payload: { command: 'UpdateScore', score } });
   draw();
 }
 
 function handleClick(e) {
-  const { x, y, eventId } = e.data;
+  const { x, y, eventId } = e.data.payload;
 
   if (gameState === 'start') {
     if (inRect(x, y, buttonRect)) {
-      postMessage({ type: 'intercept', eventId, intercepted: true });
+      postMessage({
+        type: 'intercepted',
+        payload: { eventId, intercepted: true },
+      });
       startGame();
     }
   } else if (gameState === 'running') {
     if (inRect(x, y, buttonRect)) {
-      postMessage({ type: 'intercept', eventId, intercepted: true });
+      postMessage({
+        type: 'intercepted',
+        payload: { eventId, intercepted: true },
+      });
       jump();
     }
   } else if (gameState === 'gameover') {
     if (inRect(x, y, buttonRect)) {
-      postMessage({ type: 'intercept', eventId, intercepted: true });
+      postMessage({
+        type: 'intercepted',
+        payload: { eventId, intercepted: true },
+      });
       startGame();
     }
   }
