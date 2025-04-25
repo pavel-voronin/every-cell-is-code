@@ -24,6 +24,11 @@
   </head>
   <body>
     <canvas id="gridCanvas"></canvas>
-    <script type="module" src="./script/main.ts"></script>
+    <script type="module">
+      import { App } from "./app/app.ts";
+
+      const canvas = document.getElementById("gridCanvas");
+      const app = new App(document, window, canvas);
+    </script>
   </body>
 </html>
