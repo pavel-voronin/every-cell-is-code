@@ -182,13 +182,13 @@ function createBlock(
   blocks.set(id, block);
 }
 
-createBlock(4, 2, 1, 2, '/workers/worker1.js');
-createBlock(3, 3, 1, 1, '/workers/worker2.js');
-createBlock(2, 4, 2, 1, '/workers/worker1.js');
-createBlock(2, 3, 1, 1, '/workers/worker3.js');
-createBlock(3, 2, 1, 1, '/workers/worker4.js');
-createBlock(2, 2, 1, 1, '/workers/worker5.js');
-createBlock(2, 1, 1, 1, '/workers/worker6.js');
+createBlock(4, 2, 1, 2, './workers/worker1.js');
+createBlock(3, 3, 1, 1, './workers/worker2.js');
+createBlock(2, 4, 2, 1, './workers/worker1.js');
+createBlock(2, 3, 1, 1, './workers/worker3.js');
+createBlock(3, 2, 1, 1, './workers/worker4.js');
+createBlock(2, 2, 1, 1, './workers/worker5.js');
+createBlock(2, 1, 1, 1, './workers/worker6.js');
 
 drawGrid();
 

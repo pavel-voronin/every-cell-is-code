@@ -15,7 +15,7 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
-    ignores: ['docs/**'],
+    ignores: ['dist/**'],
   },
   tseslint.configs.recommended,
   eslintConfigPrettier,

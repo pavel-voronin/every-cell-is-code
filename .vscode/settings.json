@@ -3,5 +3,12 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
-  "cSpell.words": ["commitlint", "Pavel", "sandboxing", "Voronin"]
+  "cSpell.words": [
+    "commitlint",
+    "Pavel",
+    "sandboxing",
+    "skywarth",
+    "vite",
+    "Voronin"
+  ]
 }
