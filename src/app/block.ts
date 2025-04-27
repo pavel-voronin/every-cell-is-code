@@ -1,5 +1,6 @@
 import { BlockManager } from './blockManager';
 import { CELL_SIZE } from './constants';
+import { eventBus } from './eventBus';
 
 export enum BlockState {
   Created = 'created',
@@ -124,6 +125,21 @@ export class Block {
         offCanvas,
       },
       [offCanvas],
+    );
+
+    eventBus.sync(
+      'grid:moved',
+      (offsetX: number, offsetY: number, scale: number) => {
+        const px = (this.x * CELL_SIZE - offsetX) * scale;
+        const py = (this.y * CELL_SIZE - offsetY) * scale;
+
+        this.setCanvasPosition(
+          px,
+          py,
+          this.w * CELL_SIZE * scale,
+          this.h * CELL_SIZE * scale,
+        );
+      },
     );
   }
 

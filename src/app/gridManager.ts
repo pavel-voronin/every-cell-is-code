@@ -1,5 +1,6 @@
 import { BlockManager } from './blockManager';
 import { CELL_SIZE, MAX_SCALE, MIN_SCALE } from './constants';
+import { eventBus } from './eventBus';
 
 // todo: integrate them into class
 
@@ -19,6 +20,8 @@ export class GridManager {
     protected blockManager: BlockManager,
     protected ctx: CanvasRenderingContext2D = canvas.getContext('2d')!,
   ) {
+    eventBus.sync('window:resize', this.setCanvasSize.bind(this));
+
     canvas.addEventListener('mousedown', async (e) => {
       const mx = e.offsetX / scale + offsetX;
       const my = e.offsetY / scale + offsetY;
@@ -210,6 +213,12 @@ export class GridManager {
     );
   }
 
+  setCanvasSize(width: number, height: number) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.drawGrid();
+  }
+
   drawGrid() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.save();
@@ -238,18 +247,8 @@ export class GridManager {
       }
     }
 
-    for (const block of this.blockManager.getBlocks()) {
-      const px = (block.x * CELL_SIZE - offsetX) * scale;
-      const py = (block.y * CELL_SIZE - offsetY) * scale;
-
-      block.setCanvasPosition(
-        px,
-        py,
-        block.w * CELL_SIZE * scale,
-        block.h * CELL_SIZE * scale,
-      );
-    }
-
     this.ctx.restore();
+
+    eventBus.emit('grid:moved', offsetX, offsetY, scale);
   }
 }
