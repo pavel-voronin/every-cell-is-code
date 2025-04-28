@@ -9,7 +9,7 @@ export class App {
   protected blockManager: BlockManager;
 
   constructor(
-    protected document: Document,
+    protected document: Document, // todo: create a wrapper for browser context
     protected window: Window,
     protected canvas: HTMLCanvasElement,
   ) {
@@ -24,14 +24,22 @@ export class App {
     this.window.dispatchEvent(new Event('resize'));
 
     this.blockManager = new BlockManager(document, this.metaStore);
-    this.gridManager = new GridManager(canvas, this.blockManager);
+    this.gridManager = new GridManager(canvas);
 
-    this.metaStore.addBlockMeta(4, 2, 1, 2, './workers/worker1.js');
-    this.metaStore.addBlockMeta(3, 3, 1, 1, './workers/worker2.js');
-    this.metaStore.addBlockMeta(2, 4, 2, 1, './workers/worker1.js');
+    this.metaStore.addBlockMeta(4, 2, 1, 2, './workers/worker1.js', {
+      pointerdown: true,
+    });
+    this.metaStore.addBlockMeta(3, 3, 1, 1, './workers/worker2.js', {
+      pointerdown: true,
+    });
+    this.metaStore.addBlockMeta(2, 4, 2, 1, './workers/worker1.js', {
+      pointerdown: true,
+    });
     this.metaStore.addBlockMeta(2, 3, 1, 1, './workers/worker3.js');
     this.metaStore.addBlockMeta(3, 2, 1, 1, './workers/worker4.js');
-    this.metaStore.addBlockMeta(2, 2, 1, 1, './workers/worker5.js');
+    this.metaStore.addBlockMeta(2, 2, 1, 1, './workers/worker5.js', {
+      pointerdown: true,
+    });
     this.metaStore.addBlockMeta(2, 1, 1, 1, './workers/worker6.js');
 
     this.blockManager.spawn(4, 2);

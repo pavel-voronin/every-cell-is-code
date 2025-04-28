@@ -1,6 +1,7 @@
 import { BlockManager } from './blockManager';
 import { CELL_SIZE } from './constants';
 import { eventBus } from './eventBus';
+import { Events } from './metaStore';
 
 export enum BlockState {
   Created = 'created',
@@ -26,11 +27,17 @@ const Direction = {
   nw: [-1, -1] as [number, number],
 };
 
+const EVENT_RETENTION_TIMEOUT = 50; // ms
+
 export class Block {
   protected state = BlockState.Created;
   protected counter = 0;
   protected canvas: HTMLCanvasElement;
-  protected pendingEvents = new Map<number, (intercepted: boolean) => void>();
+  protected rememberedEvents = new Map<
+    number,
+    { type: string; event: Event; timestamp: number }
+  >();
+  protected scale: number = 1.0;
 
   protected worker: Worker;
 
@@ -42,35 +49,88 @@ export class Block {
     public w: number,
     public h: number,
     public src: string,
+    public events: Events,
   ) {
-    this.worker = new Worker(src, { type: 'module' }); // to use CSP eventually
+    // Canvas
 
     const width = CELL_SIZE * w;
     const height = CELL_SIZE * h;
 
-    this.canvas = document.createElement('canvas');
+    this.canvas = this.document.createElement('canvas');
     this.canvas.width = width;
     this.canvas.height = height;
     this.canvas.style.position = 'absolute';
-    this.canvas.style.pointerEvents = 'none';
+    this.canvas.style.pointerEvents = Object.values(this.events).every(
+      (v) => v === false,
+    )
+      ? 'none'
+      : 'auto';
     this.canvas.style.zIndex = '1';
-    document.body.appendChild(this.canvas);
+
+    this.initializeCanvasEventListener();
+
+    this.document.body.appendChild(this.canvas);
 
     const offCanvas = this.canvas.transferControlToOffscreen();
     offCanvas.width = width;
     offCanvas.height = height;
 
-    this.worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
-      if (e.data.type === 'intercepted') {
-        const { eventId, intercepted } = e.data.payload as {
-          eventId: number;
-          intercepted: boolean;
-        };
+    eventBus.sync(
+      'grid:moved',
+      (offsetX: number, offsetY: number, scale: number) => {
+        const px = (this.x * CELL_SIZE - offsetX) * scale;
+        const py = (this.y * CELL_SIZE - offsetY) * scale;
+        this.scale = scale;
 
-        const resolver = this.pendingEvents.get(eventId);
-        if (resolver) {
-          resolver(intercepted);
-          this.dropPendingEvent(eventId);
+        this.setCanvasPosition(
+          px,
+          py,
+          this.w * CELL_SIZE * scale,
+          this.h * CELL_SIZE * scale,
+        );
+      },
+    );
+
+    // Worker
+
+    this.worker = new Worker(src, { type: 'module' }); // to use CSP eventually
+    this.initializeWorkerEventListeners();
+
+    this.worker.postMessage(
+      {
+        type: 'init',
+        width,
+        height,
+        wCells: w,
+        hCells: h,
+        offCanvas,
+      },
+      [offCanvas],
+    );
+
+    this.cleanupOldEvents();
+  }
+
+  protected reEmitEvent(eventId: number) {
+    const rememberedEvent = this.rememberedEvents.get(eventId)?.event;
+
+    if (rememberedEvent) {
+      eventBus.emit(rememberedEvent.type, rememberedEvent);
+      this.rememberedEvents.delete(eventId);
+    }
+  }
+
+  protected initializeWorkerEventListeners() {
+    this.worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
+      if (e.data.type === 're-emit') {
+        if (
+          e.data.payload &&
+          e.data.payload.eventId &&
+          typeof e.data.payload.eventId === 'number'
+        ) {
+          this.reEmitEvent(e.data.payload.eventId);
+        } else {
+          // todo: terminate block
         }
       } else if (e.data.type === 'message') {
         const payload = e.data.payload as {
@@ -79,7 +139,6 @@ export class Block {
         };
 
         // 'from' should belong to the block
-
         const from = payload.from ? payload.from : [0, 0];
 
         if (
@@ -90,7 +149,6 @@ export class Block {
         }
 
         // 'to' should point outside
-
         const to: [number, number][] = (
           payload.to
             ? (typeof payload.to === 'string'
@@ -114,45 +172,106 @@ export class Block {
         this.blockManager.sendMessage(to, e.data.payload!);
       }
     };
-
-    this.worker.postMessage(
-      {
-        type: 'init',
-        width,
-        height,
-        wCells: w,
-        hCells: h,
-        offCanvas,
-      },
-      [offCanvas],
-    );
-
-    eventBus.sync(
-      'grid:moved',
-      (offsetX: number, offsetY: number, scale: number) => {
-        const px = (this.x * CELL_SIZE - offsetX) * scale;
-        const py = (this.y * CELL_SIZE - offsetY) * scale;
-
-        this.setCanvasPosition(
-          px,
-          py,
-          this.w * CELL_SIZE * scale,
-          this.h * CELL_SIZE * scale,
-        );
-      },
-    );
   }
 
-  requestEventId() {
+  // Periodically clean up old remembered events
+  protected cleanupOldEvents() {
+    setInterval(() => {
+      const now = Date.now();
+      for (const [eventId, { timestamp }] of this.rememberedEvents.entries()) {
+        if (now - timestamp > EVENT_RETENTION_TIMEOUT) {
+          this.rememberedEvents.delete(eventId);
+        }
+      }
+    }, EVENT_RETENTION_TIMEOUT);
+  }
+
+  protected rememberEvent(type: string, eventId: number, e: Event) {
+    this.rememberedEvents.set(eventId, {
+      type,
+      event: e,
+      timestamp: Date.now(),
+    });
+  }
+
+  protected initializeCanvasEventListener() {
+    if (this.events.wheel) {
+      this.canvas.addEventListener('wheel', (e: WheelEvent) => {
+        e.preventDefault();
+        const x = e.offsetX / this.scale;
+        const y = e.offsetY / this.scale;
+        const deltaX = e.deltaX;
+        const deltaY = e.deltaY;
+        const eventId = this.nextEventId();
+        this.rememberEvent('wheel', eventId, e);
+        this.postMessage({
+          type: 'wheel',
+          payload: { x, y, deltaX, deltaY, eventId },
+        });
+      });
+    } else {
+      this.canvas.addEventListener('wheel', (e: WheelEvent) => {
+        eventBus.emit('wheel', new WheelEvent(e.type, e));
+      });
+    }
+
+    if (this.events.pointerdown) {
+      this.canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+        const x = e.offsetX / this.scale;
+        const y = e.offsetY / this.scale;
+        const pointerId = e.pointerId;
+        const eventId = this.nextEventId();
+        this.rememberEvent('pointerdown', eventId, e);
+        this.postMessage({
+          type: 'pointerdown',
+          payload: { x, y, pointerId, eventId },
+        });
+      });
+    } else {
+      this.canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+        eventBus.emit('pointerdown', new PointerEvent(e.type, e));
+      });
+    }
+
+    if (this.events.pointerup) {
+      this.canvas.addEventListener('pointerup', (e: PointerEvent) => {
+        const x = e.offsetX / this.scale;
+        const y = e.offsetY / this.scale;
+        const pointerId = e.pointerId;
+        const eventId = this.nextEventId();
+        this.rememberEvent('pointerup', eventId, e);
+        this.postMessage({
+          type: 'pointerup',
+          payload: { x, y, pointerId, eventId },
+        });
+      });
+    } else {
+      this.canvas.addEventListener('pointerup', (e: PointerEvent) => {
+        eventBus.emit('pointerup', new PointerEvent(e.type, e));
+      });
+    }
+
+    if (this.events.pointermove) {
+      this.canvas.addEventListener('pointermove', (e: PointerEvent) => {
+        const x = e.offsetX / this.scale;
+        const y = e.offsetY / this.scale;
+        const pointerId = e.pointerId;
+        const eventId = this.nextEventId();
+        this.rememberEvent('pointermove', eventId, e);
+        this.postMessage({
+          type: 'pointermove',
+          payload: { x, y, pointerId, eventId },
+        });
+      });
+    } else {
+      this.canvas.addEventListener('pointermove', (e: PointerEvent) => {
+        eventBus.emit('pointermove', new PointerEvent(e.type, e));
+      });
+    }
+  }
+
+  nextEventId() {
     return this.counter++;
-  }
-
-  dropPendingEvent(eventId: number) {
-    this.pendingEvents.delete(eventId);
-  }
-
-  addPendingEvent(eventId: number, resolver: (intercepted: boolean) => void) {
-    this.pendingEvents.set(eventId, resolver);
   }
 
   postMessage(message: WorkerMessage, options?: StructuredSerializeOptions) {

@@ -37,19 +37,18 @@ function handle(e) {
     e.data.payload.command === 'ChangeColor'
   ) {
     changeColor();
-  } else if (e.data.type === 'click') {
-    const { x, y, eventId } = e.data.payload;
+  }
 
-    var intercepted = false;
+  if (e.data.type === 'pointerdown') {
+    const { x, y, pointerId, eventId } = e.data.payload;
 
     const r = Math.min(height, width) / 3,
       dx = x - width / 2,
       dy = y - height / 2;
     if (dx * dx + dy * dy <= r * r) {
       changeColor();
-      intercepted = true;
+    } else {
+      postMessage({ type: 're-emit', payload: { eventId } });
     }
-
-    postMessage({ type: 'intercepted', payload: { eventId, intercepted } });
   }
 }

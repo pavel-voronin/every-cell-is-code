@@ -6,13 +6,29 @@ type MetaPoint = {
   w: number;
   h: number;
   src: string;
+  events: Events;
+};
+
+// todo: move to domain types
+export type Events = {
+  wheel: boolean;
+  pointerdown: boolean;
+  pointerup: boolean;
+  pointermove: boolean;
 };
 
 export class MetaStore {
   protected origins = new Map<MetaPointCoords, MetaPoint>();
   protected index = new Map<string, string>();
 
-  addBlockMeta(x: number, y: number, w: number, h: number, src: string) {
+  addBlockMeta(
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    src: string,
+    events: Partial<MetaPoint['events'] & { all: boolean }> = {},
+  ) {
     const originKey: MetaPointCoords = `${x},${y}`;
 
     this.origins.set(originKey, {
@@ -21,6 +37,12 @@ export class MetaStore {
       w,
       h,
       src,
+      events: {
+        wheel: events.wheel ?? events.all ?? false,
+        pointerdown: events.pointerdown ?? events.all ?? false,
+        pointerup: events.pointerup ?? events.all ?? false,
+        pointermove: events.pointermove ?? events.all ?? false,
+      },
     });
 
     for (let dx = 0; dx < w; dx++) {

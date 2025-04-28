@@ -29,12 +29,7 @@ function draw() {
 }
 
 function handle(e) {
-  if (e.data.type === 'click') {
-    const eventId = e.data.payload.eventId;
-    postMessage({
-      type: 'intercepted',
-      payload: { eventId, intercepted: true },
-    });
+  if (e.data.type === 'pointerdown') {
     const to = dirs[di];
     di = (di + 1) % dirs.length;
     postMessage({

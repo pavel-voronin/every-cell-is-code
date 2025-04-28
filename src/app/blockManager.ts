@@ -15,10 +15,10 @@ export class BlockManager {
     const blockMeta = this.metaStore.getBlockMeta(x, y);
 
     if (blockMeta) {
-      const { x, y, w, h, src } = blockMeta;
+      const { x, y, w, h, src, events } = blockMeta;
       this.blocks.set(
         `${x}_${y}`,
-        new Block(this.document, this, x, y, w, h, src),
+        new Block(this.document, this, x, y, w, h, src, events),
       );
     }
   }

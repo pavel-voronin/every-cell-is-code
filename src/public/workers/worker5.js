@@ -22,7 +22,7 @@ self.onmessage = (e) => {
     setup();
     draw();
   }
-  if (e.data.type === 'click') {
+  if (e.data.type === 'pointerdown') {
     handleClick(e);
   }
 };
@@ -70,27 +70,30 @@ function handleClick(e) {
 
   if (gameState === 'start') {
     if (inRect(x, y, buttonRect)) {
-      postMessage({
-        type: 'intercepted',
-        payload: { eventId, intercepted: true },
-      });
       startGame();
+    } else {
+      postMessage({
+        type: 're-emit',
+        payload: { eventId },
+      });
     }
   } else if (gameState === 'running') {
     if (inRect(x, y, buttonRect)) {
-      postMessage({
-        type: 'intercepted',
-        payload: { eventId, intercepted: true },
-      });
       jump();
+    } else {
+      postMessage({
+        type: 're-emit',
+        payload: { eventId },
+      });
     }
   } else if (gameState === 'gameover') {
     if (inRect(x, y, buttonRect)) {
-      postMessage({
-        type: 'intercepted',
-        payload: { eventId, intercepted: true },
-      });
       startGame();
+    } else {
+      postMessage({
+        type: 're-emit',
+        payload: { eventId },
+      });
     }
   }
 }
