@@ -18,5 +18,11 @@ export default defineConfig([
     ignores: ['dist/**'],
   },
   tseslint.configs.recommended,
+  {
+    files: ['**/workers/*.js'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
   eslintConfigPrettier,
 ]);
