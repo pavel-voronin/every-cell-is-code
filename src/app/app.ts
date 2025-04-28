@@ -13,6 +13,7 @@ export class App {
     protected window: Window,
     protected canvas: HTMLCanvasElement,
   ) {
+    this.stopTouchEvents();
     this.window.addEventListener('resize', (e: Event) => {
       eventBus.emit(
         'window:resize',
@@ -40,5 +41,24 @@ export class App {
     this.blockManager.spawn(3, 2);
     this.blockManager.spawn(2, 2);
     this.blockManager.spawn(2, 1);
+  }
+
+  protected stopTouchEvents() {
+    this.document.addEventListener('touchstart', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
+    this.document.addEventListener('touchmove', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
+    this.document.addEventListener('touchend', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
+    this.document.addEventListener('touchcancel', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
   }
 }
