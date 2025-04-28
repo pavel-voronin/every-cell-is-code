@@ -1,0 +1,37 @@
+[
+  {
+    "x": 4,
+    "y": 2,
+    "w": 1,
+    "h": 2,
+    "src": "./workers/worker1.js",
+    "events": { "pointerdown": true }
+  },
+  {
+    "x": 3,
+    "y": 3,
+    "w": 1,
+    "h": 1,
+    "src": "./workers/worker2.js",
+    "events": { "pointerdown": true }
+  },
+  {
+    "x": 2,
+    "y": 4,
+    "w": 2,
+    "h": 1,
+    "src": "./workers/worker1.js",
+    "events": { "pointerdown": true }
+  },
+  { "x": 2, "y": 3, "w": 1, "h": 1, "src": "./workers/worker3.js" },
+  { "x": 3, "y": 2, "w": 1, "h": 1, "src": "./workers/worker4.js" },
+  {
+    "x": 2,
+    "y": 2,
+    "w": 1,
+    "h": 1,
+    "src": "./workers/worker5.js",
+    "events": { "pointerdown": true }
+  },
+  { "x": 2, "y": 1, "w": 1, "h": 1, "src": "./workers/worker6.js" }
+]

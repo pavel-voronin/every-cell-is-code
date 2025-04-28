@@ -30,32 +30,6 @@ export class App {
 
     this.blockManager = new BlockManager(this.context, this.metaStore);
     this.gridManager = new GridManager(canvas);
-
-    // Data
-
-    this.metaStore.addBlockMeta(4, 2, 1, 2, './workers/worker1.js', {
-      pointerdown: true,
-    });
-    this.metaStore.addBlockMeta(3, 3, 1, 1, './workers/worker2.js', {
-      pointerdown: true,
-    });
-    this.metaStore.addBlockMeta(2, 4, 2, 1, './workers/worker1.js', {
-      pointerdown: true,
-    });
-    this.metaStore.addBlockMeta(2, 3, 1, 1, './workers/worker3.js');
-    this.metaStore.addBlockMeta(3, 2, 1, 1, './workers/worker4.js');
-    this.metaStore.addBlockMeta(2, 2, 1, 1, './workers/worker5.js', {
-      pointerdown: true,
-    });
-    this.metaStore.addBlockMeta(2, 1, 1, 1, './workers/worker6.js');
-
-    this.blockManager.spawn(4, 2);
-    this.blockManager.spawn(3, 3);
-    this.blockManager.spawn(2, 4);
-    this.blockManager.spawn(2, 3);
-    this.blockManager.spawn(3, 2);
-    this.blockManager.spawn(2, 2);
-    this.blockManager.spawn(2, 1);
   }
 
   protected stopTouchEvents() {

@@ -1,5 +1,6 @@
 import { Block } from './block';
 import { Context } from './context';
+import { eventBus } from './eventBus';
 import { MetaStore } from './metaStore';
 
 export class BlockManager {
@@ -10,6 +11,10 @@ export class BlockManager {
     protected metaStore: MetaStore,
   ) {
     this.metaStore = metaStore;
+
+    eventBus.on('meta:loaded', (x: number, y: number) => {
+      this.spawn(x, y);
+    });
   }
 
   spawn(x: number, y: number) {

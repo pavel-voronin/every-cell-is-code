@@ -170,6 +170,19 @@ export class GridManager {
 
     this.ctx.restore();
 
-    eventBus.emit('grid:moved', this.offsetX, this.offsetY, this.scale);
+    eventBus.emit('camera:moved', this.offsetX, this.offsetY, this.scale);
+
+    const minVisibleX = Math.floor(this.offsetX / CELL_SIZE);
+    const maxVisibleX = Math.floor((this.offsetX + worldWidth) / CELL_SIZE);
+    const minVisibleY = Math.floor(this.offsetY / CELL_SIZE);
+    const maxVisibleY = Math.floor((this.offsetY + worldHeight) / CELL_SIZE);
+
+    eventBus.emit(
+      'grid:visibleArea',
+      minVisibleX,
+      maxVisibleX,
+      minVisibleY,
+      maxVisibleY,
+    );
   }
 }

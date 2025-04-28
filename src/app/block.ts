@@ -73,7 +73,7 @@ export class Block {
     offCanvas.height = height;
 
     eventBus.sync(
-      'grid:moved',
+      'camera:moved',
       (offsetX: number, offsetY: number, scale: number) => {
         const px = (this.x * CELL_SIZE - offsetX) * scale;
         const py = (this.y * CELL_SIZE - offsetY) * scale;
