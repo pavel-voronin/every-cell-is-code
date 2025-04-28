@@ -12,14 +12,12 @@ Together, they form a programmable universe — decentralized, reactive, and ali
 
 ## 🚧 Roadmap
 
-- [ ] Security: static AST analysis, sandboxing, no external communication
-- [ ] **Codebase maturity:** refactor MVP, improve architecture, clean up and stabilize core logic
+- [x] **Codebase maturity:** refactor MVP, improve architecture, clean up and stabilize core logic
+- [x] Chunked loading of blocks
 - [ ] Grid navigation
-- [ ] Describe the API
-- [ ] Chunked loading of blocks
-- [ ] Authentication
+- [ ] Developer Experience (API, instructions, your [ideas](https://github.com/pavel-voronin/every-cell-is-code/discussions))
 - [ ] Live block editor
-- [ ] Standalone domain
+- [ ] Standalone domain and sandboxing w/ CSP
 
 ---
 
@@ -28,7 +26,7 @@ Together, they form a programmable universe — decentralized, reactive, and ali
 Create your own block and drop it onto the grid!
 
 1. Write a JavaScript worker and place it next to `src/public/workers` folder.
-2. In `src/script/main.ts`, pick any free coordinates and register your block.
+2. Pick any free coordinates and register your block in `src/public/chunk_{chunkX = x/8}_{chunkY = y/8}.json`. Chunk size **will be** adjusted.
 3. Submit a PR to share your block with the world 🌍
 
 ---
