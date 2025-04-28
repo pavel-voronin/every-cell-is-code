@@ -1,8 +1,15 @@
-import { CELL_SIZE, MAX_SCALE, MIN_SCALE } from './constants';
+import {
+  CELL_SIZE,
+  GRID_FONT,
+  GRID_LINE_STYLE,
+  GRID_LINE_WIDTH,
+  GRID_STROKE_STYLE,
+  MAX_SCALE,
+  MIN_SCALE,
+  SCALE_STEP,
+  TAP_THRESHOLD,
+} from './constants';
 import { eventBus } from './eventBus';
-
-const TAP_THRESHOLD = 5;
-const SCALE_STEP = 1.1;
 
 export class GridManager {
   protected scale = 1;
@@ -140,20 +147,23 @@ export class GridManager {
     const rows = Math.ceil(worldHeight / CELL_SIZE) + 1;
     const startX = Math.floor(this.offsetX / CELL_SIZE) * CELL_SIZE;
     const startY = Math.floor(this.offsetY / CELL_SIZE) * CELL_SIZE;
-    const lineWidth = 1 / this.scale;
-    // todo: move styles to constants
-    this.ctx.lineWidth = lineWidth;
-    this.ctx.font = `${12}px sans-serif`;
-    this.ctx.fillStyle = '#aaf';
+
+    this.ctx.lineWidth = GRID_LINE_WIDTH / this.scale;
+    this.ctx.font = GRID_FONT;
+    this.ctx.fillStyle = GRID_LINE_STYLE;
+    this.ctx.strokeStyle = GRID_STROKE_STYLE;
 
     for (let i = 0; i < cols; i++) {
       const x = startX + i * CELL_SIZE - this.offsetX;
+
       for (let j = 0; j < rows; j++) {
         const y = startY + j * CELL_SIZE - this.offsetY;
-        this.ctx.strokeStyle = '#444';
+
         this.ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+
         const coordX = Math.floor((startX + i * CELL_SIZE) / CELL_SIZE);
         const coordY = Math.floor((startY + j * CELL_SIZE) / CELL_SIZE);
+
         this.ctx.fillText(`${coordX},${coordY}`, x + 5, y + 15);
       }
     }

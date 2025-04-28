@@ -1,5 +1,5 @@
 import { BlockManager } from './blockManager';
-import { CELL_SIZE } from './constants';
+import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from './constants';
 import { Context } from './context';
 import { eventBus } from './eventBus';
 import { Events } from './metaStore';
@@ -27,8 +27,6 @@ const Direction = {
   w: [-1, 0] as [number, number],
   nw: [-1, -1] as [number, number],
 };
-
-const EVENT_RETENTION_TIMEOUT = 50; // ms
 
 export class Block {
   protected state = BlockState.Created;
