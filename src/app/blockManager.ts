@@ -1,11 +1,12 @@
 import { Block } from './block';
+import { Context } from './context';
 import { MetaStore } from './metaStore';
 
 export class BlockManager {
   protected blocks = new Map<string, Block>();
 
   constructor(
-    protected document: Document,
+    protected context: Context,
     protected metaStore: MetaStore,
   ) {
     this.metaStore = metaStore;
@@ -18,7 +19,7 @@ export class BlockManager {
       const { x, y, w, h, src, events } = blockMeta;
       this.blocks.set(
         `${x}_${y}`,
-        new Block(this.document, this, x, y, w, h, src, events),
+        new Block(this.context, this, x, y, w, h, src, events),
       );
     }
   }

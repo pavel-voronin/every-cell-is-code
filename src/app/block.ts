@@ -1,5 +1,6 @@
 import { BlockManager } from './blockManager';
 import { CELL_SIZE } from './constants';
+import { Context } from './context';
 import { eventBus } from './eventBus';
 import { Events } from './metaStore';
 
@@ -42,7 +43,7 @@ export class Block {
   protected worker: Worker;
 
   constructor(
-    protected document: Document,
+    protected context: Context,
     protected blockManager: BlockManager,
     public x: number,
     public y: number,
@@ -56,7 +57,7 @@ export class Block {
     const width = CELL_SIZE * w;
     const height = CELL_SIZE * h;
 
-    this.canvas = this.document.createElement('canvas');
+    this.canvas = this.context.createCanvasElement();
     this.canvas.width = width;
     this.canvas.height = height;
     this.canvas.style.position = 'absolute';
@@ -68,8 +69,6 @@ export class Block {
     this.canvas.style.zIndex = '1';
 
     this.initializeCanvasEventListener();
-
-    this.document.body.appendChild(this.canvas);
 
     const offCanvas = this.canvas.transferControlToOffscreen();
     offCanvas.width = width;

@@ -2,6 +2,7 @@ import { BlockManager } from './blockManager';
 import { MetaStore } from './metaStore';
 import { GridManager } from './gridManager';
 import { eventBus } from './eventBus';
+import { Context } from './context';
 
 export class App {
   protected gridManager: GridManager;
@@ -9,22 +10,28 @@ export class App {
   protected blockManager: BlockManager;
 
   constructor(
-    protected document: Document, // todo: create a wrapper for browser context
-    protected window: Window,
+    protected context: Context,
     protected canvas: HTMLCanvasElement,
   ) {
+    // Browser specific preparations
+
     this.stopTouchEvents();
-    this.window.addEventListener('resize', (e: Event) => {
+
+    this.context.window.addEventListener('resize', (e: Event) => {
       eventBus.emit(
         'window:resize',
         (e.target as Window).innerWidth,
         (e.target as Window).innerHeight,
       );
     });
-    this.window.dispatchEvent(new Event('resize'));
+    this.context.window.dispatchEvent(new Event('resize'));
 
-    this.blockManager = new BlockManager(document, this.metaStore);
+    // App specific preparations
+
+    this.blockManager = new BlockManager(this.context, this.metaStore);
     this.gridManager = new GridManager(canvas);
+
+    // Data
 
     this.metaStore.addBlockMeta(4, 2, 1, 2, './workers/worker1.js', {
       pointerdown: true,
@@ -52,21 +59,25 @@ export class App {
   }
 
   protected stopTouchEvents() {
-    this.document.addEventListener('touchstart', (e) => e.preventDefault(), {
-      passive: false,
-      capture: true,
-    });
-    this.document.addEventListener('touchmove', (e) => e.preventDefault(), {
-      passive: false,
-      capture: true,
-    });
-    this.document.addEventListener('touchend', (e) => e.preventDefault(), {
-      passive: false,
-      capture: true,
-    });
-    this.document.addEventListener('touchcancel', (e) => e.preventDefault(), {
-      passive: false,
-      capture: true,
-    });
+    this.context.document.addEventListener(
+      'touchstart',
+      (e) => e.preventDefault(),
+      { capture: true },
+    );
+    this.context.document.addEventListener(
+      'touchmove',
+      (e) => e.preventDefault(),
+      { capture: true },
+    );
+    this.context.document.addEventListener(
+      'touchend',
+      (e) => e.preventDefault(),
+      { capture: true },
+    );
+    this.context.document.addEventListener(
+      'touchcancel',
+      (e) => e.preventDefault(),
+      { capture: true },
+    );
   }
 }
