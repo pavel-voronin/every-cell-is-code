@@ -6,6 +6,7 @@ export default defineConfig({
     outDir: '../dist',
     emptyOutDir: true,
   },
+  appType: 'mpa',
   server: {
     allowedHosts: true,
   },
