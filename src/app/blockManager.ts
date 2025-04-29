@@ -29,18 +29,27 @@ export class BlockManager {
     }
   }
 
-  sendMessage(coords: [number, number][], payload: Record<string, unknown>) {
-    for (const coord of coords) {
-      const origin = this.metaStore.getBlockMeta(coord[0], coord[1]);
+  sendMessage(
+    from: [number, number],
+    to: [number, number],
+    payload: Record<string, unknown>,
+  ) {
+    const origin = this.metaStore.getBlockMeta(to[0], to[1]);
 
-      if (origin) {
-        const block = this.blocks.get(`${origin.x}_${origin.y}`);
-        if (block) {
-          block.postMessage({
-            type: 'message',
-            payload,
-          });
-        }
+    if (origin) {
+      const block = this.blocks.get(`${origin.x}_${origin.y}`);
+      if (block) {
+        const localFrom = [from[0] - origin.x, from[1] - origin.y];
+        const localTo = [to[0] - origin.x, to[1] - origin.y];
+
+        block.postMessage({
+          type: 'message',
+          payload: {
+            ...payload,
+            from: localFrom,
+            to: localTo,
+          },
+        });
       }
     }
   }

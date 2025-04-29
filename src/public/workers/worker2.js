@@ -13,10 +13,7 @@ self.onmessage = (e) => {
   }
 };
 
-const dirs = [
-  ['n', 'e'],
-  ['n', 's'],
-];
+const dirs = [['n', [1, 0]], ['n', 's'], 'n'];
 let di = 0;
 
 function draw() {

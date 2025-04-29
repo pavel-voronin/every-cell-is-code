@@ -117,56 +117,78 @@ export class Block {
     }
   }
 
+  protected sendMessage(payload: Record<string, unknown>) {
+    // 'from' should belong to the block
+
+    const from: [number, number] =
+      Array.isArray(payload.from) &&
+      payload.from.length === 2 &&
+      payload.from.every((coord) => Number.isInteger(coord))
+        ? (payload.from as [number, number])
+        : [0, 0];
+
+    if (from[0] < 0 || from[0] >= this.w || from[1] < 0 || from[1] >= this.h) {
+      return;
+    }
+
+    const globalFrom: [number, number] = [this.x + from[0], this.y + from[1]];
+
+    // 'to' should point outside
+
+    // `to` can be undefined (all directions) or be in formats:
+    //
+    //  - 'n' -- string, e.g. w, ne, s, etc.
+    //  - [0, 1] -- relative coords (vector length = 1 at most)
+    //  - ['n', 's'] -- array of strings
+    //  - ['n', [1, 0]] -- array of mixed
+
+    const to: [number, number][] = (
+      payload.to
+        ? (Array.isArray(payload.to) ? payload.to : [payload.to]).flatMap(
+            (dir) => {
+              if (typeof dir === 'string' && dir in Direction) {
+                const d = Direction[dir as keyof typeof Direction];
+                return [[from[0] + d[0], from[1] + d[1]]];
+              } else if (
+                Array.isArray(dir) &&
+                dir.length === 2 &&
+                dir.every((coord) => Number.isInteger(coord))
+              ) {
+                return [[from[0] + dir[0], from[1] + dir[1]]];
+              }
+              return [];
+            },
+          )
+        : Object.values(Direction).map((d) => [from[0] + d[0], from[1] + d[1]])
+    )
+      .filter(
+        (coords): coords is [number, number] =>
+          coords.length === 2 &&
+          coords.every((coord) => typeof coord === 'number'),
+      )
+      .filter(([tx, ty]) => tx < 0 || tx >= this.w || ty < 0 || ty >= this.h)
+      .map(([tx, ty]) => [this.x + from[0] + tx, this.y + from[1] + ty]);
+
+    to.forEach((globalTo) => {
+      this.blockManager.sendMessage(globalFrom, globalTo, payload);
+    });
+  }
+
   protected initializeWorkerEventListeners() {
     this.worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
-      if (e.data.type === 're-emit') {
-        if (
-          e.data.payload &&
-          e.data.payload.eventId &&
-          typeof e.data.payload.eventId === 'number'
-        ) {
-          this.reEmitEvent(e.data.payload.eventId);
-        } else {
-          // todo: terminate block
+      if (e.data.payload !== undefined) {
+        if (e.data.type === 're-emit') {
+          if (
+            e.data.payload.eventId &&
+            typeof e.data.payload.eventId === 'number'
+          ) {
+            this.reEmitEvent(e.data.payload.eventId);
+          } else {
+            // todo: terminate block
+          }
+        } else if (e.data.type === 'message') {
+          this.sendMessage(e.data.payload);
         }
-      } else if (e.data.type === 'message') {
-        const payload = e.data.payload as {
-          to?: keyof typeof Direction | (keyof typeof Direction)[];
-          from?: [number, number];
-        };
-
-        // 'from' should belong to the block
-        const from = payload.from ? payload.from : [0, 0];
-
-        if (
-          from &&
-          (from[0] < 0 || from[0] >= this.w || from[1] < 0 || from[1] >= this.h)
-        ) {
-          return;
-        }
-
-        // 'to' should point outside
-        const to: [number, number][] = (
-          payload.to
-            ? (typeof payload.to === 'string'
-                ? [payload.to]
-                : payload.to
-              ).filter((dir) => dir in Direction)
-            : (Object.keys(Direction) as (keyof typeof Direction)[])
-        )
-          .filter((dir) => {
-            const d = Direction[dir];
-            const tx = from[0] + d[0];
-            const ty = from[1] + d[1];
-
-            return tx >= this.w || tx < 0 || ty < 0 || ty >= this.h;
-          })
-          .map((dir) => {
-            const d = Direction[dir];
-            return [this.x + from[0] + d[0], this.y + from[1] + d[1]];
-          });
-
-        this.blockManager.sendMessage(to, e.data.payload!);
       }
     };
   }
