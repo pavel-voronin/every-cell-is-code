@@ -2,7 +2,10 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
       @layer utilities {
@@ -19,11 +22,9 @@
         padding: 0;
         overflow: hidden;
         background: #111;
-        touch-action: none;
       }
       canvas {
         display: block;
-        touch-action: none;
         outline: none;
       }
       #gridCanvas {
@@ -40,22 +41,43 @@
   </head>
   <body>
     <canvas id="gridCanvas"></canvas>
-    <div id="navBlock" class="font-inter fixed right-8 bottom-8 z-10 max-w-xs">
+    <div
+      id="infoBlock"
+      class="font-inter fixed right-8 bottom-8 z-10 max-w-xs"
+      data-state="expanded"
+    >
       <div
-        id="navBlockContent"
-        class="bg-gray-800 rounded-xl p-4 text-gray-200 flex flex-col gap-4"
+        id="infoBlockContent"
+        class="bg-gray-800 rounded-xl p-4 text-gray-200 flex flex-col gap-4 hidden"
       >
-        <div class="font-bold text-lg tracking-tight text-sky-300">
-          Every Cell is Code
+        <div class="flex items-center justify-between">
+          <div class="font-bold text-lg tracking-tight text-sky-300">
+            Every Cell is Code
+          </div>
+          <button
+            id="collapseInfoBlock"
+            class="ml-2 p-1 rounded hover:bg-gray-700 active:bg-gray-600 transition-colors text-sky-300 focus:outline-none w-8 h-8 min-w-8 min-h-8"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <polyline
+                points="6,9 12,15 18,9"
+                fill="none"
+                stroke="#38bdf8"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
         </div>
-        <div class="mb-2">
-          <div class="text-gray-300 text-xs leading-relaxed select-none">
+        <div class="mb-1">
+          <div class="text-gray-300 text-xs leading-relaxed mb-2">
             Move around the field using mouse or touch. Try interacting with a
             block: use mouse, tap, or sometimes keyboard (make sure your cursor
             is over the block).
           </div>
           <div
-            class="flex justify-between items-center text-gray-500 text-xs border-t border-gray-700 pt-3 mt-2"
+            class="flex justify-between items-center text-gray-500 text-xs pt-3 mt-2"
           >
             <span>v%APP_VERSION%</span>
             <div class="flex gap-3 flex-wrap text-sm">
@@ -73,14 +95,33 @@
           </div>
         </div>
       </div>
+      <button
+        id="expandInfoBlock"
+        class="flex flex-row items-center gap-2 bg-gray-800/80 rounded-full shadow-lg hover:bg-gray-700 active:bg-gray-600 transition-colors px-4 py-2 fixed right-8 bottom-8 z-20 min-w-0 h-10 hidden"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <polyline
+            points="6,15 12,9 18,15"
+            fill="none"
+            stroke="#38bdf8"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="text-sky-200 font-medium text-sm select-none">Stuff</span>
+      </button>
     </div>
     <script type="module">
       import { App } from "./app/app.ts";
       import { Context } from "./app/context.ts";
+      import { setupInfoBlockLogic } from "./app/ui/infoBlock.ts";
 
-      const browser = new Context(document, window);
+      const browser = new Context(document, window, localStorage);
       const canvas = document.getElementById("gridCanvas");
       const app = new App(browser, canvas);
+
+      setupInfoBlockLogic(browser);
     </script>
   </body>
 </html>

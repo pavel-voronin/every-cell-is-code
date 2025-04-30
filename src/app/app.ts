@@ -36,22 +36,29 @@ export class App {
     this.context.document.addEventListener(
       'touchstart',
       (e) => e.preventDefault(),
-      { capture: true },
+      { passive: false, capture: true },
     );
     this.context.document.addEventListener(
       'touchmove',
       (e) => e.preventDefault(),
-      { capture: true },
+      { passive: false, capture: true },
     );
     this.context.document.addEventListener(
       'touchend',
-      (e) => e.preventDefault(),
-      { capture: true },
+      (e: TouchEvent) => {
+        e.preventDefault();
+        // check if type of target is <a> then pass event to it
+        if (e.target && (e.target as HTMLElement).tagName === 'A') {
+          (e.target as HTMLAnchorElement).click();
+          return;
+        }
+      },
+      { passive: false, capture: true },
     );
     this.context.document.addEventListener(
       'touchcancel',
       (e) => e.preventDefault(),
-      { capture: true },
+      { passive: false, capture: true },
     );
   }
 }

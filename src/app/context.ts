@@ -2,6 +2,7 @@ export class Context {
   constructor(
     public document: Document,
     public window: Window,
+    public storage: Storage,
   ) {}
 
   createCanvasElement(): HTMLCanvasElement {
