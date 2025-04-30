@@ -17,6 +17,8 @@ export type Events = {
   pointerdown: boolean;
   pointerup: boolean;
   pointermove: boolean;
+  keydown: boolean;
+  keyup: boolean;
 };
 
 enum ChunkStatus {
@@ -65,6 +67,8 @@ export class MetaStore {
         pointerdown: events.pointerdown ?? events.all ?? false,
         pointerup: events.pointerup ?? events.all ?? false,
         pointermove: events.pointermove ?? events.all ?? false,
+        keydown: events.keydown ?? events.all ?? false,
+        keyup: events.keyup ?? events.all ?? false,
       },
     });
 

@@ -58,6 +58,8 @@ export class Block {
     this.canvas = this.context.createCanvasElement();
     this.canvas.width = width;
     this.canvas.height = height;
+    this.canvas.tabIndex = -1;
+    this.canvas.style.outline = 'none';
     this.canvas.style.position = 'absolute';
     this.canvas.style.pointerEvents = Object.values(this.events).every(
       (v) => v === false,
@@ -214,6 +216,10 @@ export class Block {
   }
 
   protected initializeCanvasEventListener() {
+    this.canvas.addEventListener('pointerenter', () => {
+      this.canvas.focus();
+    });
+
     if (this.events.wheel) {
       this.canvas.addEventListener('wheel', (e: WheelEvent) => {
         e.preventDefault();
@@ -285,6 +291,30 @@ export class Block {
     } else {
       this.canvas.addEventListener('pointermove', (e: PointerEvent) => {
         eventBus.emit('pointermove', new PointerEvent(e.type, e));
+      });
+    }
+
+    if (this.events.keydown) {
+      this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
+        const code = e.code;
+        const eventId = this.nextEventId();
+        this.rememberEvent('keydown', eventId, e);
+        this.postMessage({
+          type: 'keydown',
+          payload: { code, eventId },
+        });
+      });
+    }
+
+    if (this.events.keyup) {
+      this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
+        const code = e.code;
+        const eventId = this.nextEventId();
+        this.rememberEvent('keyup', eventId, e);
+        this.postMessage({
+          type: 'keyup',
+          payload: { code, eventId },
+        });
       });
     }
   }
