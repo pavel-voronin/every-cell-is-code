@@ -1,1 +1,6 @@
+if git diff --cached --quiet package.json && git diff --cached --quiet package-lock.json; then
+  npm version patch --no-git-tag-version
+  git add package.json package-lock.json
+fi
+
 npx lint-staged
