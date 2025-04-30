@@ -22,7 +22,7 @@ function draw() {
   ctx.fillRect(0, 0, width, height);
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('Click Me', 22, height / 2 + 2);
+  ctx.fillText('Click Me', 22, height / 2 + 6);
 }
 
 function handle(e) {

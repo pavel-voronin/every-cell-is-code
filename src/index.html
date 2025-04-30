@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @layer utilities {
+        .font-inter {
+          font-family: "Inter", sans-serif;
+        }
+      }
+    </style>
     <title>Every Cell is Code</title>
     <style>
       html,
@@ -16,15 +24,56 @@
       canvas {
         display: block;
         touch-action: none;
+        outline: none;
       }
       #gridCanvas {
         position: absolute;
         z-index: 0;
       }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <canvas id="gridCanvas"></canvas>
+    <div id="navBlock" class="font-inter fixed right-8 bottom-8 z-10 max-w-xs">
+      <div
+        id="navBlockContent"
+        class="bg-gray-800 rounded-xl p-4 text-gray-200 flex flex-col gap-4"
+      >
+        <div class="font-bold text-lg tracking-tight text-sky-300">
+          Every Cell is Code
+        </div>
+        <div class="mb-2">
+          <div class="text-gray-300 text-xs leading-relaxed select-none">
+            Move around the field using mouse or touch. Try interacting with a
+            block: use mouse, tap, or sometimes keyboard (make sure your cursor
+            is over the block).
+          </div>
+          <div
+            class="flex justify-between items-center text-gray-500 text-xs border-t border-gray-700 pt-3 mt-2"
+          >
+            <span>v%APP_VERSION%</span>
+            <div class="flex gap-3 flex-wrap text-sm">
+              <a
+                href="https://github.com/pavel-voronin/every-cell-is-code"
+                class="underline text-sky-300 hover:text-sky-400 transition-colors"
+                >GitHub</a
+              >
+              <a
+                href="https://discord.gg/fSMwfn8sKw"
+                class="underline text-sky-300 hover:text-sky-400 transition-colors"
+                >Discord</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module">
       import { App } from "./app/app.ts";
       import { Context } from "./app/context.ts";

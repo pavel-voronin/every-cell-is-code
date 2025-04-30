@@ -59,7 +59,6 @@ export class Block {
     this.canvas.width = width;
     this.canvas.height = height;
     this.canvas.tabIndex = -1;
-    this.canvas.style.outline = 'none';
     this.canvas.style.position = 'absolute';
     this.canvas.style.pointerEvents = Object.values(this.events).every(
       (v) => v === false,
