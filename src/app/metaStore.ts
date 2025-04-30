@@ -102,7 +102,10 @@ export class MetaStore {
     const url = `./meta/chunk_${chunkX}_${chunkY}.json`;
     const promise = fetch(url)
       .then(async (res) => {
-        if (!res.ok) throw new Error(`Failed to load chunk: ${url}`);
+        if (!res.ok) {
+          this.chunkStatuses.set(key, ChunkStatus.Error);
+          return;
+        }
 
         const data = await res.json();
 
