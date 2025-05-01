@@ -29,7 +29,7 @@ export class App {
     // App specific preparations
 
     this.blockManager = new BlockManager(this.context, this.metaStore);
-    this.gridManager = new GridManager(canvas);
+    this.gridManager = new GridManager(canvas, [3, 3]);
   }
 
   protected stopTouchEvents() {

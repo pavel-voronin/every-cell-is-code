@@ -9,24 +9,28 @@ import {
   SCALE_STEP,
   TAP_THRESHOLD,
 } from './constants';
+import { XY } from './domain';
 import { eventBus } from './eventBus';
 
 export class GridManager {
   protected scale = 1;
-  protected offsetX = 0;
-  protected offsetY = 0;
+  protected offsetX: number = 0;
+  protected offsetY: number = 0;
   protected pointers: Map<number, { x: number; y: number }> = new Map();
   protected isDragging = false;
   protected isPinching = false;
   protected lastTouchDist = 0;
   protected lastTouchMid = { x: 0, y: 0 };
-  protected dragStart: { x: number; y: number } | null = null;
+  protected dragStart: { x: number; y: number } | null = null; // todo cleanup types
+  protected ctx: CanvasRenderingContext2D;
 
   constructor(
     protected canvas: HTMLCanvasElement,
-    protected ctx: CanvasRenderingContext2D = canvas.getContext('2d')!,
+    initialCoords: XY = [0, 0],
   ) {
+    this.ctx = canvas.getContext('2d')!;
     eventBus.sync('window:resize', this.setCanvasSize.bind(this));
+    this.moveTo(initialCoords[0], initialCoords[1]);
     eventBus.on('wheel', this.canvas.dispatchEvent.bind(this.canvas));
     eventBus.on('pointerdown', this.canvas.dispatchEvent.bind(this.canvas));
     eventBus.on('pointerup', this.canvas.dispatchEvent.bind(this.canvas));
@@ -184,5 +188,14 @@ export class GridManager {
       minVisibleY,
       maxVisibleY,
     );
+  }
+
+  public moveTo(x: number, y: number) {
+    this.offsetX =
+      x * CELL_SIZE - this.canvas.width / (2 * this.scale) + CELL_SIZE / 2;
+    this.offsetY =
+      y * CELL_SIZE - this.canvas.height / (2 * this.scale) + CELL_SIZE / 2;
+
+    this.drawGrid();
   }
 }
