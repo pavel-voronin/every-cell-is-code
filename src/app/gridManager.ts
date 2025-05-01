@@ -9,7 +9,7 @@ import {
   SCALE_STEP,
   TAP_THRESHOLD,
 } from './constants';
-import { XY } from './domain';
+import { XY } from './types';
 import { eventBus } from './eventBus';
 
 export class GridManager {

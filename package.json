@@ -33,5 +33,15 @@
       "eslint --fix",
       "prettier --write --ignore-unknown"
     ]
-  }
+  },
+  "preloadChunks": [
+    [
+      0,
+      0
+    ],
+    [
+      -1,
+      0
+    ]
+  ]
 }

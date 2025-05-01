@@ -2,7 +2,7 @@ import { BlockManager } from './blockManager';
 import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from './constants';
 import { Context } from './context';
 import { eventBus } from './eventBus';
-import { Events } from './metaStore';
+import { BlockEvents } from './types';
 
 export enum BlockState {
   Created = 'created',
@@ -48,7 +48,7 @@ export class Block {
     public w: number,
     public h: number,
     public src: string,
-    public events: Events,
+    public events: BlockEvents,
   ) {
     // Canvas
 

@@ -29,6 +29,9 @@ export class App {
     // App specific preparations
 
     this.blockManager = new BlockManager(this.context, this.metaStore);
+
+    ('__PRELOAD_CHUNKS__'); // eslint-disable-line @typescript-eslint/no-unused-expressions
+
     this.gridManager = new GridManager(canvas, [3, 3]);
   }
 

@@ -1,25 +1,14 @@
 import { CHUNK_SIZE } from './constants';
+import {
+  BlockEvents,
+  BlockMeta,
+  BlockMetaCoords,
+  Chunk,
+  RawBlockEvents,
+  RawBlockMeta,
+  XY,
+} from './types';
 import { eventBus } from './eventBus';
-
-type MetaPointCoords = `${MetaPoint['x']},${MetaPoint['y']}`;
-
-type MetaPoint = {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  src: string;
-  events: Events;
-};
-
-export type Events = {
-  wheel: boolean;
-  pointerdown: boolean;
-  pointerup: boolean;
-  pointermove: boolean;
-  keydown: boolean;
-  keyup: boolean;
-};
 
 enum ChunkStatus {
   Loading = 'loading',
@@ -28,10 +17,9 @@ enum ChunkStatus {
 }
 
 export class MetaStore {
-  protected origins = new Map<MetaPointCoords, MetaPoint>();
+  protected origins = new Map<BlockMetaCoords, BlockMeta>();
   protected index = new Map<string, string>();
   protected chunkStatuses = new Map<string, ChunkStatus>();
-  protected chunkPromises = new Map<string, Promise<void>>();
 
   constructor() {
     eventBus.on(
@@ -39,42 +27,58 @@ export class MetaStore {
       (minX: number, maxX: number, minY: number, maxY: number) => {
         for (let x = minX; x <= maxX; x++) {
           for (let y = minY; y <= maxY; y++) {
-            this.loadChunk(x, y);
+            this.loadChunk([x, y]);
           }
         }
       },
     );
   }
 
-  addBlockMeta(
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    src: string,
-    events: Partial<MetaPoint['events'] & { all: boolean }> = {},
-  ) {
-    const originKey: MetaPointCoords = `${x},${y}`;
+  protected resolveBlockEvents(events: RawBlockEvents = {}): BlockEvents {
+    return {
+      wheel: events.wheel ?? events.all ?? false,
+      pointerdown: events.pointerdown ?? events.all ?? false,
+      pointerup: events.pointerup ?? events.all ?? false,
+      pointermove: events.pointermove ?? events.all ?? false,
+      keydown: events.keydown ?? events.all ?? false,
+      keyup: events.keyup ?? events.all ?? false,
+    };
+  }
 
+  protected validateChunk(chunk: unknown): chunk is Chunk {
+    return (
+      Array.isArray(chunk) &&
+      chunk.every((meta) => this.validateRawBlockMeta(meta))
+    );
+  }
+
+  protected validateRawBlockMeta(meta: unknown): meta is RawBlockMeta {
+    return (
+      typeof (meta as RawBlockMeta) === 'object' &&
+      typeof (meta as RawBlockMeta).x === 'number' &&
+      typeof (meta as RawBlockMeta).y === 'number' &&
+      typeof (meta as RawBlockMeta).w === 'number' &&
+      typeof (meta as RawBlockMeta).h === 'number' &&
+      typeof (meta as RawBlockMeta).src === 'string' &&
+      ((meta as RawBlockMeta).events === undefined ||
+        typeof (meta as RawBlockMeta).events === 'object')
+    );
+  }
+
+  protected addBlockMeta(meta: RawBlockMeta) {
+    const originKey: BlockMetaCoords = `${meta.x},${meta.y}`;
     this.origins.set(originKey, {
-      x,
-      y,
-      w,
-      h,
-      src,
-      events: {
-        wheel: events.wheel ?? events.all ?? false,
-        pointerdown: events.pointerdown ?? events.all ?? false,
-        pointerup: events.pointerup ?? events.all ?? false,
-        pointermove: events.pointermove ?? events.all ?? false,
-        keydown: events.keydown ?? events.all ?? false,
-        keyup: events.keyup ?? events.all ?? false,
-      },
+      x: meta.x,
+      y: meta.y,
+      w: meta.w,
+      h: meta.h,
+      src: meta.src,
+      events: this.resolveBlockEvents(meta.events),
     });
 
-    for (let dx = 0; dx < w; dx++) {
-      for (let dy = 0; dy < h; dy++) {
-        const cellKey = `${x + dx},${y + dy}`;
+    for (let dx = 0; dx < meta.w; dx++) {
+      for (let dy = 0; dy < meta.h; dy++) {
+        const cellKey = `${meta.x + dx},${meta.y + dy}`;
         this.index.set(cellKey, originKey);
       }
     }
@@ -83,11 +87,11 @@ export class MetaStore {
   getBlockMeta(x: number, y: number) {
     const originKey = this.index.get(`${x},${y}`);
     return originKey
-      ? this.origins.get(originKey as MetaPointCoords)
+      ? this.origins.get(originKey as BlockMetaCoords)
       : undefined;
   }
 
-  async loadChunk(x: number, y: number): Promise<void> {
+  protected async loadChunk([x, y]: XY): Promise<void> {
     const chunkX = Math.floor(x / CHUNK_SIZE);
     const chunkY = Math.floor(y / CHUNK_SIZE);
     const key = `${chunkX},${chunkY}`;
@@ -96,40 +100,38 @@ export class MetaStore {
 
     if (status === ChunkStatus.Error) return;
     if (status === ChunkStatus.Loaded) return;
-    if (status === ChunkStatus.Loading) return this.chunkPromises.get(key)!;
+    if (status === ChunkStatus.Loading) return;
 
     this.chunkStatuses.set(key, ChunkStatus.Loading);
     const url = `./meta/chunk_${chunkX}_${chunkY}.json`;
-    const promise = fetch(url)
+    fetch(url)
       .then(async (res) => {
         if (!res.ok) {
           this.chunkStatuses.set(key, ChunkStatus.Error);
           return;
         }
 
-        const data = await res.json();
-
-        for (const meta of data) {
-          // todo: validate
-          this.addBlockMeta(
-            meta.x,
-            meta.y,
-            meta.w,
-            meta.h,
-            meta.src,
-            meta.events ?? {},
-          );
-
-          eventBus.emit('meta:loaded', meta.x, meta.y);
+        const data: unknown = await res.json();
+        if (!this.validateChunk(data)) {
+          throw new Error(`Invalid chunk data: ${url}`);
         }
 
-        this.chunkStatuses.set(key, ChunkStatus.Loaded);
+        this.loadChunkData([chunkX, chunkY], data as Chunk);
       })
       .catch((err) => {
         this.chunkStatuses.set(key, ChunkStatus.Error);
         throw err;
       });
-    this.chunkPromises.set(key, promise);
-    return promise;
+  }
+
+  loadChunkData(chunkXY: XY, data: Chunk) {
+    const key = `${chunkXY[0]},${chunkXY[1]}`;
+
+    for (const meta of data) {
+      this.addBlockMeta(meta);
+      eventBus.emit('meta:loaded', meta.x, meta.y);
+    }
+
+    this.chunkStatuses.set(key, ChunkStatus.Loaded);
   }
 }
