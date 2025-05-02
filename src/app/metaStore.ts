@@ -129,7 +129,7 @@ export class MetaStore {
 
     for (const meta of data) {
       this.addBlockMeta(meta);
-      eventBus.emit('meta:loaded', meta.x, meta.y);
+      eventBus.emit('meta:loaded', [meta.x, meta.y]);
     }
 
     this.chunkStatuses.set(key, ChunkStatus.Loaded);

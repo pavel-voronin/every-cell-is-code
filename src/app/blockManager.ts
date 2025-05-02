@@ -2,6 +2,7 @@ import { Block } from './block';
 import { Context } from './context';
 import { eventBus } from './eventBus';
 import { MetaStore } from './metaStore';
+import { XY } from './types';
 
 export class BlockManager {
   protected blocks = new Map<string, Block>();
@@ -12,8 +13,8 @@ export class BlockManager {
   ) {
     this.metaStore = metaStore;
 
-    eventBus.on('meta:loaded', (x: number, y: number) => {
-      this.spawn(x, y);
+    eventBus.on('meta:loaded', (xy: XY) => {
+      this.spawn(xy[0], xy[1]);
     });
   }
 
@@ -24,7 +25,7 @@ export class BlockManager {
       const { x, y, w, h, src, events } = blockMeta;
       this.blocks.set(
         `${x}_${y}`,
-        new Block(this.context, this, x, y, w, h, src, events),
+        new Block(this.context, this, [x, y], w, h, src, events),
       );
     }
   }

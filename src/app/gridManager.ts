@@ -14,14 +14,13 @@ import { eventBus } from './eventBus';
 
 export class GridManager {
   protected scale = 1;
-  protected offsetX: number = 0;
-  protected offsetY: number = 0;
-  protected pointers: Map<number, { x: number; y: number }> = new Map();
+  protected offset: XY = [0, 0];
+  protected pointers = new Map<number, XY>();
   protected isDragging = false;
   protected isPinching = false;
   protected lastTouchDist = 0;
-  protected lastTouchMid = { x: 0, y: 0 };
-  protected dragStart: { x: number; y: number } | null = null; // todo cleanup types
+  protected lastTouchMid: XY = [0, 0];
+  protected dragStart: XY | null = null;
   protected ctx: CanvasRenderingContext2D;
 
   constructor(
@@ -30,7 +29,7 @@ export class GridManager {
   ) {
     this.ctx = canvas.getContext('2d')!;
     eventBus.sync('window:resize', this.setCanvasSize.bind(this));
-    this.moveTo(initialCoords[0], initialCoords[1]);
+    this.moveTo(initialCoords);
     eventBus.on('wheel', this.canvas.dispatchEvent.bind(this.canvas));
     eventBus.on('pointerdown', this.canvas.dispatchEvent.bind(this.canvas));
     eventBus.on('pointerup', this.canvas.dispatchEvent.bind(this.canvas));
@@ -46,53 +45,53 @@ export class GridManager {
 
   protected onWheel(e: WheelEvent) {
     e.preventDefault();
-    const wx = e.offsetX / this.scale + this.offsetX,
-      wy = e.offsetY / this.scale + this.offsetY;
+    const wx = e.offsetX / this.scale + this.offset[0];
+    const wy = e.offsetY / this.scale + this.offset[1];
     this.scale =
       e.deltaY < 0
         ? Math.min(MAX_SCALE, this.scale * SCALE_STEP)
         : e.deltaY > 0
           ? Math.max(MIN_SCALE, this.scale / SCALE_STEP)
           : this.scale;
-    this.offsetX = wx - e.offsetX / this.scale;
-    this.offsetY = wy - e.offsetY / this.scale;
+    this.offset[0] = wx - e.offsetX / this.scale;
+    this.offset[1] = wy - e.offsetY / this.scale;
     this.drawGrid();
   }
 
   protected onPointerDown(e: PointerEvent) {
     this.canvas.setPointerCapture(e.pointerId);
-    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    this.pointers.set(e.pointerId, [e.clientX, e.clientY]);
     if (this.pointers.size === 1) {
       this.isDragging = false;
-      this.dragStart = { x: e.clientX, y: e.clientY };
+      this.dragStart = [e.clientX, e.clientY];
     } else if (this.pointers.size === 2) {
       this.isPinching = true;
       const pts = Array.from(this.pointers.values());
-      const p1 = pts[0],
-        p2 = pts[1];
-      this.lastTouchDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      this.lastTouchMid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const p1 = pts[0];
+      const p2 = pts[1];
+      this.lastTouchDist = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+      this.lastTouchMid = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
     }
   }
 
   protected onPointerMove(e: PointerEvent) {
     if (!this.pointers.has(e.pointerId)) return;
     const prev = this.pointers.get(e.pointerId)!;
-    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    this.pointers.set(e.pointerId, [e.clientX, e.clientY]);
     if (this.pointers.size === 1 && !this.isPinching) {
       const start = this.dragStart;
       if (start && !this.isDragging) {
-        const dx = e.clientX - start.x;
-        const dy = e.clientY - start.y;
+        const dx = e.clientX - start[0];
+        const dy = e.clientY - start[1];
         if (Math.hypot(dx, dy) > TAP_THRESHOLD) {
           this.isDragging = true;
         }
       }
       if (this.isDragging) {
-        const dx = (e.clientX - prev.x) / this.scale;
-        const dy = (e.clientY - prev.y) / this.scale;
-        this.offsetX -= dx;
-        this.offsetY -= dy;
+        const dx = (e.clientX - prev[0]) / this.scale;
+        const dy = (e.clientY - prev[1]) / this.scale;
+        this.offset[0] -= dx;
+        this.offset[1] -= dy;
         this.drawGrid();
       }
     } else if (this.pointers.size === 2) {
@@ -100,18 +99,18 @@ export class GridManager {
       const pts = Array.from(this.pointers.values());
       const p1 = pts[0],
         p2 = pts[1];
-      const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+      const dist = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+      const mid: XY = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2];
       const zoom = dist / this.lastTouchDist;
-      const worldMidX = mid.x / this.scale + this.offsetX;
-      const worldMidY = mid.y / this.scale + this.offsetY;
+      const worldMidX = mid[0] / this.scale + this.offset[0];
+      const worldMidY = mid[1] / this.scale + this.offset[1];
       this.scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, this.scale * zoom));
-      this.offsetX = worldMidX - mid.x / this.scale;
-      this.offsetY = worldMidY - mid.y / this.scale;
-      const panDx = (mid.x - this.lastTouchMid.x) / this.scale;
-      const panDy = (mid.y - this.lastTouchMid.y) / this.scale;
-      this.offsetX -= panDx;
-      this.offsetY -= panDy;
+      this.offset[0] = worldMidX - mid[0] / this.scale;
+      this.offset[1] = worldMidY - mid[1] / this.scale;
+      const panDx = (mid[0] - this.lastTouchMid[0]) / this.scale;
+      const panDy = (mid[1] - this.lastTouchMid[1]) / this.scale;
+      this.offset[0] -= panDx;
+      this.offset[1] -= panDy;
       this.lastTouchDist = dist;
       this.lastTouchMid = mid;
       this.drawGrid();
@@ -126,7 +125,7 @@ export class GridManager {
       this.isPinching = false;
       this.isDragging = true;
       const [rem] = this.pointers.values();
-      if (rem) this.dragStart = { x: rem.x, y: rem.y };
+      if (rem) this.dragStart = [rem[0], rem[1]];
     } else if (this.pointers.size === 0) {
       this.isPinching = false;
       this.isDragging = false;
@@ -149,8 +148,8 @@ export class GridManager {
     const worldHeight = this.canvas.height / this.scale;
     const cols = Math.ceil(worldWidth / CELL_SIZE) + 1;
     const rows = Math.ceil(worldHeight / CELL_SIZE) + 1;
-    const startX = Math.floor(this.offsetX / CELL_SIZE) * CELL_SIZE;
-    const startY = Math.floor(this.offsetY / CELL_SIZE) * CELL_SIZE;
+    const startX = Math.floor(this.offset[0] / CELL_SIZE) * CELL_SIZE;
+    const startY = Math.floor(this.offset[1] / CELL_SIZE) * CELL_SIZE;
 
     this.ctx.lineWidth = GRID_LINE_WIDTH / this.scale;
     this.ctx.font = GRID_FONT;
@@ -158,10 +157,10 @@ export class GridManager {
     this.ctx.strokeStyle = GRID_STROKE_STYLE;
 
     for (let i = 0; i < cols; i++) {
-      const x = startX + i * CELL_SIZE - this.offsetX;
+      const x = startX + i * CELL_SIZE - this.offset[0];
 
       for (let j = 0; j < rows; j++) {
-        const y = startY + j * CELL_SIZE - this.offsetY;
+        const y = startY + j * CELL_SIZE - this.offset[1];
 
         this.ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
 
@@ -174,12 +173,12 @@ export class GridManager {
 
     this.ctx.restore();
 
-    eventBus.emit('camera:moved', this.offsetX, this.offsetY, this.scale);
+    eventBus.emit('camera:moved', this.offset, this.scale);
 
-    const minVisibleX = Math.floor(this.offsetX / CELL_SIZE);
-    const maxVisibleX = Math.floor((this.offsetX + worldWidth) / CELL_SIZE);
-    const minVisibleY = Math.floor(this.offsetY / CELL_SIZE);
-    const maxVisibleY = Math.floor((this.offsetY + worldHeight) / CELL_SIZE);
+    const minVisibleX = Math.floor(this.offset[0] / CELL_SIZE);
+    const maxVisibleX = Math.floor((this.offset[0] + worldWidth) / CELL_SIZE);
+    const minVisibleY = Math.floor(this.offset[1] / CELL_SIZE);
+    const maxVisibleY = Math.floor((this.offset[1] + worldHeight) / CELL_SIZE);
 
     eventBus.emit(
       'grid:visibleArea',
@@ -190,11 +189,11 @@ export class GridManager {
     );
   }
 
-  public moveTo(x: number, y: number) {
-    this.offsetX =
-      x * CELL_SIZE - this.canvas.width / (2 * this.scale) + CELL_SIZE / 2;
-    this.offsetY =
-      y * CELL_SIZE - this.canvas.height / (2 * this.scale) + CELL_SIZE / 2;
+  public moveTo(xy: XY) {
+    this.offset[0] =
+      xy[0] * CELL_SIZE - this.canvas.width / (2 * this.scale) + CELL_SIZE / 2;
+    this.offset[1] =
+      xy[1] * CELL_SIZE - this.canvas.height / (2 * this.scale) + CELL_SIZE / 2;
 
     this.drawGrid();
   }

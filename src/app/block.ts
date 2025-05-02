@@ -2,7 +2,7 @@ import { BlockManager } from './blockManager';
 import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from './constants';
 import { Context } from './context';
 import { eventBus } from './eventBus';
-import { BlockEvents } from './types';
+import { BlockEvents, XY } from './types';
 
 export enum BlockState {
   Created = 'created',
@@ -17,15 +17,15 @@ export type WorkerMessage<T extends object = Record<string, unknown>> = {
   payload?: T; // idea: pick serializable type
 };
 
-const Direction = {
-  n: [0, -1] as [number, number],
-  ne: [1, -1] as [number, number],
-  e: [1, 0] as [number, number],
-  se: [1, 1] as [number, number],
-  s: [0, 1] as [number, number],
-  sw: [-1, 1] as [number, number],
-  w: [-1, 0] as [number, number],
-  nw: [-1, -1] as [number, number],
+const Direction: Record<string, XY> = {
+  n: [0, -1],
+  ne: [1, -1],
+  e: [1, 0],
+  se: [1, 1],
+  s: [0, 1],
+  sw: [-1, 1],
+  w: [-1, 0],
+  nw: [-1, -1],
 };
 
 export class Block {
@@ -43,8 +43,7 @@ export class Block {
   constructor(
     protected context: Context,
     protected blockManager: BlockManager,
-    public x: number,
-    public y: number,
+    public xy: XY,
     public w: number,
     public h: number,
     public src: string,
@@ -73,21 +72,18 @@ export class Block {
     offCanvas.width = width;
     offCanvas.height = height;
 
-    eventBus.sync(
-      'camera:moved',
-      (offsetX: number, offsetY: number, scale: number) => {
-        const px = (this.x * CELL_SIZE - offsetX) * scale;
-        const py = (this.y * CELL_SIZE - offsetY) * scale;
-        this.scale = scale;
+    eventBus.sync('camera:moved', (offset: XY, scale: number) => {
+      const px = (this.xy[0] * CELL_SIZE - offset[0]) * scale;
+      const py = (this.xy[1] * CELL_SIZE - offset[1]) * scale;
+      this.scale = scale;
 
-        this.setCanvasPosition(
-          px,
-          py,
-          this.w * CELL_SIZE * scale,
-          this.h * CELL_SIZE * scale,
-        );
-      },
-    );
+      this.setCanvasPosition(
+        px,
+        py,
+        this.w * CELL_SIZE * scale,
+        this.h * CELL_SIZE * scale,
+      );
+    });
 
     // Worker
 
@@ -121,18 +117,18 @@ export class Block {
   protected sendMessage(payload: Record<string, unknown>) {
     // 'from' should belong to the block
 
-    const from: [number, number] =
+    const from: XY =
       Array.isArray(payload.from) &&
       payload.from.length === 2 &&
       payload.from.every((coord) => Number.isInteger(coord))
-        ? (payload.from as [number, number])
+        ? (payload.from as XY)
         : [0, 0];
 
     if (from[0] < 0 || from[0] >= this.w || from[1] < 0 || from[1] >= this.h) {
       return;
     }
 
-    const globalFrom: [number, number] = [this.x + from[0], this.y + from[1]];
+    const globalFrom: XY = [this.xy[0] + from[0], this.xy[1] + from[1]];
 
     // 'to' should point outside
 
@@ -143,7 +139,7 @@ export class Block {
     //  - ['n', 's'] -- array of strings
     //  - ['n', [1, 0]] -- array of mixed
 
-    const to: [number, number][] = (
+    const to: XY[] = (
       payload.to
         ? (Array.isArray(payload.to) ? payload.to : [payload.to]).flatMap(
             (dir) => {
@@ -163,12 +159,15 @@ export class Block {
         : Object.values(Direction).map((d) => [from[0] + d[0], from[1] + d[1]])
     )
       .filter(
-        (coords): coords is [number, number] =>
+        (coords): coords is XY =>
           coords.length === 2 &&
           coords.every((coord) => typeof coord === 'number'),
       )
       .filter(([tx, ty]) => tx < 0 || tx >= this.w || ty < 0 || ty >= this.h)
-      .map(([tx, ty]) => [this.x + from[0] + tx, this.y + from[1] + ty]);
+      .map(([tx, ty]) => [
+        this.xy[0] + from[0] + tx,
+        this.xy[1] + from[1] + ty,
+      ]);
 
     to.forEach((globalTo) => {
       this.blockManager.sendMessage(globalFrom, globalTo, payload);
