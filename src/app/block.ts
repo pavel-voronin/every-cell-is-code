@@ -4,14 +4,6 @@ import { Context } from './context';
 import { eventBus } from './eventBus';
 import { BlockEvents, XY } from './types';
 
-export enum BlockState {
-  Created = 'created',
-  Loading = 'loading',
-  Loaded = 'loaded',
-  Started = 'started',
-  Terminated = 'terminated',
-}
-
 export type WorkerMessage<T extends object = Record<string, unknown>> = {
   type: string;
   payload?: T; // idea: pick serializable type
@@ -29,7 +21,6 @@ const Direction: Record<string, XY> = {
 };
 
 export class Block {
-  protected state = BlockState.Created;
   protected counter = 0;
   protected canvas: HTMLCanvasElement;
   protected rememberedEvents = new Map<
