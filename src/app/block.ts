@@ -166,22 +166,35 @@ export class Block {
   }
 
   protected initializeWorkerEventListeners() {
-    this.worker.onmessage = (e: MessageEvent<WorkerMessage>) => {
-      if (e.data.payload !== undefined) {
+    this.worker.addEventListener(
+      'message',
+      (e: MessageEvent<WorkerMessage>) => {
+        e.data.payload ??= {};
+
+        if (e.data.type === 'terminate') {
+          eventBus.emit('block:terminate', this.xy);
+        }
+
         if (e.data.type === 're-emit') {
           if (
             e.data.payload.eventId &&
             typeof e.data.payload.eventId === 'number'
           ) {
             this.reEmitEvent(e.data.payload.eventId);
-          } else {
-            // todo: terminate block
           }
         } else if (e.data.type === 'message') {
           this.sendMessage(e.data.payload);
         }
-      }
-    };
+      },
+    );
+
+    this.worker.addEventListener('error', (e: ErrorEvent) => {
+      eventBus.emit('block:worker-error', this.xy, e);
+    });
+
+    this.worker.addEventListener('messageerror', (e: MessageEvent) => {
+      eventBus.emit('block:worker-messageerror', this.xy, e);
+    });
   }
 
   // Periodically clean up old remembered events
@@ -320,5 +333,10 @@ export class Block {
     this.canvas.style.transform = `translate(${x}px, ${y}px)`;
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
+  }
+
+  unload() {
+    this.worker.terminate();
+    this.canvas.remove();
   }
 }

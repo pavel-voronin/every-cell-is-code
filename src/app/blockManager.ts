@@ -16,6 +16,30 @@ export class BlockManager {
     eventBus.on('meta:loaded', (xy: XY) => {
       this.spawn(xy[0], xy[1]);
     });
+
+    eventBus.on('block:worker-error', (xy: XY) => {
+      const block = this.blocks.get(`${xy[0]}_${xy[1]}`);
+      if (block) {
+        block.unload();
+        this.blocks.delete(`${xy[0]}_${xy[1]}`);
+      }
+    });
+
+    eventBus.on('block:worker-messageerror', (xy: XY) => {
+      const block = this.blocks.get(`${xy[0]}_${xy[1]}`);
+      if (block) {
+        block.unload();
+        this.blocks.delete(`${xy[0]}_${xy[1]}`);
+      }
+    });
+
+    eventBus.on('block:terminate', (xy: XY) => {
+      const block = this.blocks.get(`${xy[0]}_${xy[1]}`);
+      if (block) {
+        block.unload();
+        this.blocks.delete(`${xy[0]}_${xy[1]}`);
+      }
+    });
   }
 
   spawn(x: number, y: number) {
