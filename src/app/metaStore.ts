@@ -2,13 +2,13 @@ import { CHUNK_SIZE } from './constants';
 import {
   BlockEvents,
   BlockMeta,
-  BlockMetaCoords,
   Chunk,
   RawBlockEvents,
   RawBlockMeta,
   XY,
 } from './types';
 import { eventBus } from './eventBus';
+import { TupleMap } from './structures/tuppleMap';
 
 enum ChunkStatus {
   Loading = 'loading',
@@ -17,18 +17,26 @@ enum ChunkStatus {
 }
 
 export class MetaStore {
-  protected origins = new Map<BlockMetaCoords, BlockMeta>();
-  protected index = new Map<string, string>();
-  protected chunkStatuses = new Map<string, ChunkStatus>();
+  protected origins = new TupleMap<BlockMeta>();
+  protected index = new TupleMap<XY>();
+  protected chunkStatuses = new TupleMap<ChunkStatus>();
+  protected visibleAreaRequestId = 0;
 
   constructor() {
     eventBus.on(
-      'grid:visibleArea',
-      (minX: number, maxX: number, minY: number, maxY: number) => {
+      'grid:visible-area',
+      async (minX: number, maxX: number, minY: number, maxY: number) => {
+        this.visibleAreaRequestId++;
+        const currentRequestId = this.visibleAreaRequestId;
+        const chunkPromises: Promise<void>[] = [];
         for (let x = minX; x <= maxX; x++) {
           for (let y = minY; y <= maxY; y++) {
-            this.loadChunk([x, y]);
+            chunkPromises.push(this.loadChunk([x, y]));
           }
+        }
+        await Promise.all(chunkPromises);
+        if (currentRequestId === this.visibleAreaRequestId) {
+          eventBus.emit('meta:visible-chunks-loaded', minX, maxX, minY, maxY);
         }
       },
     );
@@ -66,8 +74,7 @@ export class MetaStore {
   }
 
   protected addBlockMeta(meta: RawBlockMeta) {
-    const originKey: BlockMetaCoords = `${meta.x},${meta.y}`;
-    this.origins.set(originKey, {
+    this.origins.set([meta.x, meta.y], {
       x: meta.x,
       y: meta.y,
       w: meta.w,
@@ -78,36 +85,32 @@ export class MetaStore {
 
     for (let dx = 0; dx < meta.w; dx++) {
       for (let dy = 0; dy < meta.h; dy++) {
-        const cellKey = `${meta.x + dx},${meta.y + dy}`;
-        this.index.set(cellKey, originKey);
+        this.index.set([meta.x + dx, meta.y + dy], [meta.x, meta.y]);
       }
     }
   }
 
   getBlockMeta(x: number, y: number) {
-    const originKey = this.index.get(`${x},${y}`);
-    return originKey
-      ? this.origins.get(originKey as BlockMetaCoords)
-      : undefined;
+    const originKey = this.index.get([x, y]);
+    return originKey ? this.origins.get(originKey) : undefined;
   }
 
   protected async loadChunk([x, y]: XY): Promise<void> {
     const chunkX = Math.floor(x / CHUNK_SIZE);
     const chunkY = Math.floor(y / CHUNK_SIZE);
-    const key = `${chunkX},${chunkY}`;
 
-    const status = this.chunkStatuses.get(key);
+    const status = this.chunkStatuses.get([chunkX, chunkY]);
 
     if (status === ChunkStatus.Error) return;
     if (status === ChunkStatus.Loaded) return;
     if (status === ChunkStatus.Loading) return;
 
-    this.chunkStatuses.set(key, ChunkStatus.Loading);
+    this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Loading);
     const url = `./meta/chunk_${chunkX}_${chunkY}.json`;
     fetch(url)
       .then(async (res) => {
         if (!res.ok) {
-          this.chunkStatuses.set(key, ChunkStatus.Error);
+          this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
           return;
         }
 
@@ -119,19 +122,16 @@ export class MetaStore {
         this.loadChunkData([chunkX, chunkY], data as Chunk);
       })
       .catch((err) => {
-        this.chunkStatuses.set(key, ChunkStatus.Error);
+        this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
         throw err;
       });
   }
 
   loadChunkData(chunkXY: XY, data: Chunk) {
-    const key = `${chunkXY[0]},${chunkXY[1]}`;
-
     for (const meta of data) {
       this.addBlockMeta(meta);
-      eventBus.emit('meta:loaded', [meta.x, meta.y]);
     }
 
-    this.chunkStatuses.set(key, ChunkStatus.Loaded);
+    this.chunkStatuses.set(chunkXY, ChunkStatus.Loaded);
   }
 }

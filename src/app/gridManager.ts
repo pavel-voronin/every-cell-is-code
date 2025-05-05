@@ -9,7 +9,7 @@ import {
   SCALE_STEP,
   TAP_THRESHOLD,
 } from './constants';
-import { XY } from './types';
+import { XY, XYWH } from './types';
 import { eventBus } from './eventBus';
 
 export class GridManager {
@@ -22,6 +22,7 @@ export class GridManager {
   protected lastTouchMid: XY = [0, 0];
   protected dragStart: XY | null = null;
   protected ctx: CanvasRenderingContext2D;
+  private lastVisibleArea: XYWH | null = null;
 
   constructor(
     protected canvas: HTMLCanvasElement,
@@ -175,18 +176,41 @@ export class GridManager {
 
     eventBus.emit('camera:moved', this.offset, this.scale);
 
+    this.emitVisibleAreaIfNeeded();
+  }
+
+  // todo: may be premature optimization and out of domain logic. Think again later
+  private emitVisibleAreaIfNeeded() {
+    const worldWidth = this.canvas.width / this.scale;
+    const worldHeight = this.canvas.height / this.scale;
+
     const minVisibleX = Math.floor(this.offset[0] / CELL_SIZE);
     const maxVisibleX = Math.floor((this.offset[0] + worldWidth) / CELL_SIZE);
     const minVisibleY = Math.floor(this.offset[1] / CELL_SIZE);
     const maxVisibleY = Math.floor((this.offset[1] + worldHeight) / CELL_SIZE);
 
-    eventBus.emit(
-      'grid:visibleArea',
+    const newVisibleArea: [number, number, number, number] = [
       minVisibleX,
       maxVisibleX,
       minVisibleY,
       maxVisibleY,
-    );
+    ];
+    if (
+      !this.lastVisibleArea ||
+      this.lastVisibleArea[0] !== newVisibleArea[0] ||
+      this.lastVisibleArea[1] !== newVisibleArea[1] ||
+      this.lastVisibleArea[2] !== newVisibleArea[2] ||
+      this.lastVisibleArea[3] !== newVisibleArea[3]
+    ) {
+      eventBus.emit(
+        'grid:visible-area',
+        minVisibleX,
+        maxVisibleX,
+        minVisibleY,
+        maxVisibleY,
+      );
+      this.lastVisibleArea = newVisibleArea;
+    }
   }
 
   public moveTo(xy: XY) {

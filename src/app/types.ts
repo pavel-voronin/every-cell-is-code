@@ -1,4 +1,5 @@
 export type XY = [number, number];
+export type XYWH = [number, number, number, number];
 
 export type BlockEvents = {
   wheel: boolean;
@@ -30,5 +31,3 @@ export type BlockMeta = {
   src: string;
   events: BlockEvents;
 };
-
-export type BlockMetaCoords = `${BlockMeta['x']},${BlockMeta['y']}`;

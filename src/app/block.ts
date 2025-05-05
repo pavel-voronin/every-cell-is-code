@@ -2,7 +2,7 @@ import { BlockManager } from './blockManager';
 import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from './constants';
 import { Context } from './context';
 import { eventBus } from './eventBus';
-import { BlockEvents, XY } from './types';
+import { BlockEvents, BlockMeta, XY } from './types';
 
 export type WorkerMessage<T extends object = Record<string, unknown>> = {
   type: string;
@@ -21,6 +21,12 @@ const Direction: Record<string, XY> = {
 };
 
 export class Block {
+  public xy: XY;
+  public w: number;
+  public h: number;
+  public src: string;
+  public events: BlockEvents;
+
   protected counter = 0;
   protected canvas: HTMLCanvasElement;
   protected rememberedEvents = new Map<
@@ -34,16 +40,18 @@ export class Block {
   constructor(
     protected context: Context,
     protected blockManager: BlockManager,
-    public xy: XY,
-    public w: number,
-    public h: number,
-    public src: string,
-    public events: BlockEvents,
+    meta: BlockMeta,
   ) {
+    this.xy = [meta.x, meta.y];
+    this.w = meta.w;
+    this.h = meta.h;
+    this.src = meta.src;
+    this.events = meta.events;
+
     // Canvas
 
-    const width = CELL_SIZE * w;
-    const height = CELL_SIZE * h;
+    const width = CELL_SIZE * this.w;
+    const height = CELL_SIZE * this.h;
 
     this.canvas = this.context.createCanvasElement();
     this.canvas.width = width;
@@ -78,7 +86,7 @@ export class Block {
 
     // Worker
 
-    this.worker = new Worker(src, { type: 'module' }); // to use CSP eventually
+    this.worker = new Worker(this.src, { type: 'module' }); // to use CSP eventually
     this.initializeWorkerEventListeners();
 
     this.worker.postMessage(
@@ -86,8 +94,8 @@ export class Block {
         type: 'init',
         width,
         height,
-        wCells: w,
-        hCells: h,
+        wCells: this.w,
+        hCells: this.h,
         offCanvas,
       },
       [offCanvas],
