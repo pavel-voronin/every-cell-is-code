@@ -77,6 +77,8 @@ export class BlockManager {
     const blockMeta = this.metaStore.getBlockMeta(x, y);
 
     if (blockMeta) {
+      if (this.blocks.has([blockMeta.x, blockMeta.y])) return;
+
       this.blocks.set([x, y], new Block(this.context, this, blockMeta));
     }
   }
