@@ -14,8 +14,9 @@ Together, they form a programmable universe — decentralized, reactive, and ali
 
 - [x] **Codebase maturity:** refactor MVP, improve architecture, clean up and stabilize core logic
 - [x] Chunked loading of blocks
-- [ ] Grid navigation (infinite scroll w/ pointer lock like in Miro/Figma, teleport by coordinates)
-- [ ] Chunk management (multi-level chunks, unloading, caching, etc.)
+- [ ] Grid navigation (teleport by coordinates, save locations)
+- [ ] Chunk management (multi-level chunks, caching, etc.)
+  - [x] unloading
 - [ ] Developer Experience (API, instructions, your [ideas](https://github.com/pavel-voronin/every-cell-is-code/discussions))
 - [ ] Live block editor
 - [ ] Standalone domain and sandboxing w/ CSP
