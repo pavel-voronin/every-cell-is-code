@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type EventHandler = (...args: any[]) => void;
 
-class EventBus {
+export class EventBus {
   protected listeners: Record<string, EventHandler[]> = {};
   protected lastStates: Record<string, Parameters<EventHandler>> = {};
 
