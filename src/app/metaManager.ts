@@ -16,7 +16,7 @@ enum ChunkStatus {
   Error = 'error',
 }
 
-export class MetaStore {
+export class MetaManager {
   protected origins = new TupleMap<BlockMeta>();
   protected index = new TupleMap<XY>();
   protected chunkStatuses = new TupleMap<ChunkStatus>();

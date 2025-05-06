@@ -1,12 +1,12 @@
 import { BlockManager } from './blockManager';
-import { MetaStore } from './metaStore';
+import { MetaManager } from './metaManager';
 import { GridManager } from './gridManager';
 import { eventBus } from './eventBus';
 import { Context } from './context';
 
 export class App {
   protected gridManager: GridManager;
-  protected metaStore = new MetaStore();
+  protected metaManager = new MetaManager();
   protected blockManager: BlockManager;
 
   constructor(
@@ -28,7 +28,7 @@ export class App {
 
     // App specific preparations
 
-    this.blockManager = new BlockManager(this.context, this.metaStore);
+    this.blockManager = new BlockManager(this.context, this.metaManager);
 
     ('__PRELOAD_CHUNKS__'); // eslint-disable-line @typescript-eslint/no-unused-expressions
 

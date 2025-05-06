@@ -31,7 +31,7 @@ export default defineConfig({
           .map((coords) => {
             const chunkPath = `./src/public/meta/chunk_${coords[0]}_${coords[1]}.json`;
             const blocks = JSON.parse(fs.readFileSync(chunkPath, 'utf-8'));
-            return `this.metaStore.loadChunkData([${coords.join(',')}], ${JSON.stringify(blocks, null, 2)});`;
+            return `this.metaManager.loadChunkData([${coords.join(',')}], ${JSON.stringify(blocks, null, 2)});`;
           })
           .filter(Boolean)
           .join('\n');

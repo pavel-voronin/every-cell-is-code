@@ -1,7 +1,7 @@
 import { Block } from './block';
 import { Context } from './context';
 import { eventBus } from './eventBus';
-import { MetaStore } from './metaStore';
+import { MetaManager } from './metaManager';
 import { TupleMap } from './structures/tuppleMap';
 import { XY } from './types';
 
@@ -11,10 +11,8 @@ export class BlockManager {
 
   constructor(
     protected context: Context,
-    protected metaStore: MetaStore,
+    protected metaManager: MetaManager,
   ) {
-    this.metaStore = metaStore;
-
     eventBus.on('block:worker-error', (xy: XY) => {
       const block = this.blocks.get(xy);
       if (block) {
@@ -74,7 +72,7 @@ export class BlockManager {
       return;
     }
 
-    const blockMeta = this.metaStore.getBlockMeta(x, y);
+    const blockMeta = this.metaManager.getBlockMeta(x, y);
 
     if (blockMeta) {
       if (this.blocks.has([blockMeta.x, blockMeta.y])) return;
@@ -88,7 +86,7 @@ export class BlockManager {
     to: [number, number],
     payload: Record<string, unknown>,
   ) {
-    const origin = this.metaStore.getBlockMeta(to[0], to[1]);
+    const origin = this.metaManager.getBlockMeta(to[0], to[1]);
 
     if (origin) {
       const block = this.blocks.get([origin.x, origin.y]);
