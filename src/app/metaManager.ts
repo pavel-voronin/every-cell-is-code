@@ -68,7 +68,7 @@ export class MetaManager {
       typeof (meta as RawBlockMeta).y === 'number' &&
       typeof (meta as RawBlockMeta).w === 'number' &&
       typeof (meta as RawBlockMeta).h === 'number' &&
-      typeof (meta as RawBlockMeta).src === 'string' &&
+      typeof (meta as RawBlockMeta).url === 'string' &&
       ((meta as RawBlockMeta).events === undefined ||
         typeof (meta as RawBlockMeta).events === 'object')
     );
@@ -80,6 +80,7 @@ export class MetaManager {
       y: meta.y,
       w: meta.w,
       h: meta.h,
+      url: meta.url,
       src: meta.src,
       events: this.resolveBlockEvents(meta.events),
     });

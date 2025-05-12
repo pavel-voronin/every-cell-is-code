@@ -17,8 +17,9 @@ export type RawBlockMeta = {
   y: number;
   w: number;
   h: number;
-  src: string;
+  url: string;
   events?: RawBlockEvents;
+  src?: string;
 };
 
 export type Chunk = RawBlockMeta[];
@@ -28,6 +29,7 @@ export type BlockMeta = {
   y: number;
   w: number;
   h: number;
-  src: string;
+  url: string;
   events: BlockEvents;
+  src?: string;
 };

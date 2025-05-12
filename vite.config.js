@@ -68,12 +68,12 @@ export default defineConfig({
           let changed = false;
           let blocks = JSON.parse(fs.readFileSync(chunkPath, 'utf-8'));
           for (const block of blocks) {
-            if (block.preload && block.src && !block.workerSource) {
+            if (block.preload && block.url) {
               // src is relative to meta, so resolve to workers dir
-              const srcPath = `${workerDir}/${block.src.replace('./workers/', '')}`;
+              const srcPath = `${workerDir}/${block.url.replace('./workers/', '')}`;
 
               if (fs.existsSync(srcPath)) {
-                block.workerSource = fs.readFileSync(srcPath, 'utf-8');
+                block.src = fs.readFileSync(srcPath, 'utf-8');
                 changed = true;
               }
             }

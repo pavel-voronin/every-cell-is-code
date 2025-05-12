@@ -24,7 +24,8 @@ export class Block {
   public xy: XY;
   public w: number;
   public h: number;
-  public src: string;
+  public url: string;
+  public src?: string;
   public events: BlockEvents;
 
   protected counter = 0;
@@ -45,6 +46,7 @@ export class Block {
     this.xy = [meta.x, meta.y];
     this.w = meta.w;
     this.h = meta.h;
+    this.url = meta.url;
     this.src = meta.src;
     this.events = meta.events;
 
@@ -86,7 +88,15 @@ export class Block {
 
     // Worker
 
-    this.worker = new Worker(this.src, { type: 'module' }); // to use CSP eventually
+    if (this.src) {
+      this.worker = new Worker(
+        URL.createObjectURL(
+          new Blob([this.src], { type: 'application/javascript' }),
+        ),
+      );
+    } else {
+      this.worker = new Worker(this.url);
+    }
     this.initializeWorkerEventListeners();
 
     this.worker.postMessage(
