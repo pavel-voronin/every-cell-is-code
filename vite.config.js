@@ -84,5 +84,16 @@ export default defineConfig({
         }
       },
     },
+    {
+      name: 'watch-meta-and-workers',
+      handleHotUpdate({ file, server }) {
+        if (
+          file.startsWith(server.config.root + '/public/meta') ||
+          file.startsWith(server.config.root + '/public/workers')
+        ) {
+          server.restart();
+        }
+      },
+    },
   ],
 });
