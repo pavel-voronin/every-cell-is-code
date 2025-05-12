@@ -4,3 +4,4 @@ if git diff --cached --quiet package.json && git diff --cached --quiet package-l
 fi
 
 npx lint-staged
+npm run test
