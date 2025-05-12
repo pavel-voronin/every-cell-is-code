@@ -4,6 +4,7 @@ import {
   GRID_LINE_STYLE,
   GRID_LINE_WIDTH,
   GRID_STROKE_STYLE,
+  INITIAL_SCALE,
   MAX_SCALE,
   MIN_SCALE,
   SCALE_STEP,
@@ -13,7 +14,7 @@ import { XY, XYWH } from './types';
 import { eventBus } from './eventBus';
 
 export class GridManager {
-  protected scale = 1;
+  protected scale = INITIAL_SCALE;
   protected offset: XY = [0, 0];
   protected pointers = new Map<number, XY>();
   protected isDragging = false;

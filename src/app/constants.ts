@@ -1,6 +1,7 @@
 export const CHUNK_SIZE = 8; // gonna be 16 or so
 export const CELL_SIZE = 100;
-export const MIN_SCALE = 0.5;
+export const INITIAL_SCALE = 1.7;
+export const MIN_SCALE = 1.2;
 export const MAX_SCALE = 2;
 export const GRID_LINE_WIDTH = 1;
 export const GRID_FONT = `12px "JetBrains Mono", monospace`;
