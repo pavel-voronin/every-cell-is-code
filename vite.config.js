@@ -56,5 +56,33 @@ export default defineConfig({
         fs.writeFileSync(outFile, content);
       },
     },
+    {
+      name: 'inline-worker-source',
+      async buildStart() {
+        const metaDir = './src/public/meta';
+        const workerDir = './src/public/workers';
+        const chunkRe = /^chunk_(-?\d+)_(-?\d+)\.json$/;
+        for (const file of fs.readdirSync(metaDir)) {
+          if (!chunkRe.test(file)) continue;
+          const chunkPath = `${metaDir}/${file}`;
+          let changed = false;
+          let blocks = JSON.parse(fs.readFileSync(chunkPath, 'utf-8'));
+          for (const block of blocks) {
+            if (block.preload && block.src && !block.workerSource) {
+              // src is relative to meta, so resolve to workers dir
+              const srcPath = `${workerDir}/${block.src.replace('./workers/', '')}`;
+
+              if (fs.existsSync(srcPath)) {
+                block.workerSource = fs.readFileSync(srcPath, 'utf-8');
+                changed = true;
+              }
+            }
+          }
+          if (changed) {
+            fs.writeFileSync(chunkPath, JSON.stringify(blocks, null, 2));
+          }
+        }
+      },
+    },
   ],
 });
