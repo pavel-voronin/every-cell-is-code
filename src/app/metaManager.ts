@@ -107,11 +107,7 @@ export class MetaManager {
     if (status === ChunkStatus.Loading) return;
 
     // Check if chunk is known
-    const isKnown = knownChunks.some(
-      ([kx, ky]) => kx === chunkX && ky === chunkY,
-    );
-
-    if (!isKnown) {
+    if (!knownChunks.has([chunkX, chunkY])) {
       this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
       return;
     }
