@@ -71,4 +71,19 @@ describe('TupleSet', () => {
     expect(set.has([-1, -2])).toBe(true);
     expect(set.size).toBe(2);
   });
+
+  it('should initialize from an iterable of tuples', () => {
+    const tuples: [number, number][] = [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ];
+    const setFromIterable = new TupleSet(tuples);
+    expect(setFromIterable.size).toBe(3);
+    for (const tuple of tuples) {
+      expect(setFromIterable.has(tuple)).toBe(true);
+    }
+    // Should not contain a tuple not in the iterable
+    expect(setFromIterable.has([7, 8])).toBe(false);
+  });
 });

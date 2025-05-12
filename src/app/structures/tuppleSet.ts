@@ -1,6 +1,14 @@
 export class TupleSet {
   private set = new Set<string>();
 
+  constructor(iterable?: Iterable<[number, number]>) {
+    if (iterable) {
+      for (const tuple of iterable) {
+        this.add(tuple);
+      }
+    }
+  }
+
   private static tupleToKey(tuple: [number, number]): string {
     return `${tuple[0]},${tuple[1]}`;
   }
