@@ -9,6 +9,7 @@ import {
 } from './types';
 import { eventBus } from './eventBus';
 import { TupleMap } from './structures/tuppleMap';
+import knownChunks from './knownChunks';
 
 enum ChunkStatus {
   Loading = 'loading',
@@ -104,6 +105,16 @@ export class MetaManager {
     if (status === ChunkStatus.Error) return;
     if (status === ChunkStatus.Loaded) return;
     if (status === ChunkStatus.Loading) return;
+
+    // Check if chunk is known
+    const isKnown = knownChunks.some(
+      ([kx, ky]) => kx === chunkX && ky === chunkY,
+    );
+
+    if (!isKnown) {
+      this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
+      return;
+    }
 
     this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Loading);
     const url = `./meta/chunk_${chunkX}_${chunkY}.json`;
