@@ -17,9 +17,12 @@ Together, they form a programmable universe — decentralized, reactive, and ali
 - [ ] Grid navigation (teleport by coordinates, save locations)
 - [ ] Chunk management (multi-level chunks, caching, etc.)
   - [x] unloading
-- [ ] Developer Experience (API, instructions, your [ideas](https://github.com/pavel-voronin/every-cell-is-code/discussions))
+- [ ] Developer Experience (API, docs, tutorials, [your ideas](https://github.com/pavel-voronin/every-cell-is-code/discussions))
 - [ ] Live block editor
 - [ ] Standalone domain and sandboxing w/ CSP
+- [ ] Spatial audio
+- [ ] System API available to blocks
+  - [ ] to make block-controllers like Theme controller, Navigation controller, etc.
 
 ---
 
