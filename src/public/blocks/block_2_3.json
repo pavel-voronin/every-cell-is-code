@@ -5,7 +5,5 @@
   "w": 4,
   "h": 4,
   "template_file": "./templates/v1.js",
-  "worker_file": "./block_2_3.js",
-  "worker_dist_file": "./block_2_3.dist.js",
-  "events": {}
+  "worker_file": "./block_2_3.js"
 }

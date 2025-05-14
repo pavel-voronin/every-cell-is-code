@@ -87,10 +87,11 @@ export default defineConfig({
             }
           }
 
+          let events = {};
           if (block.worker_file) {
             const workerFile = `${blocksDir}/${block.worker_file}`;
             const worker = fs.readFileSync(workerFile, 'utf-8');
-            const events = {
+            const eventMap = {
               onPointerDown: 'pointerdown',
               onPointerUp: 'pointerup',
               onPointerMove: 'pointermove',
@@ -99,18 +100,26 @@ export default defineConfig({
               onWheel: 'wheel',
             };
 
-            block.events = {};
-
-            Object.keys(events)
+            Object.keys(eventMap)
               .filter((event) => worker.includes(`function ${event}`))
               .forEach((event) => {
-                if (!block.events[event]) {
-                  block.events[events[event]] = true;
-                }
+                events[eventMap[event]] = true;
               });
           }
 
-          fs.writeFileSync(blockPath, JSON.stringify(block, null, 2));
+          // Write work file with only events and worker_dist_file
+          const workFilePath = `${blocksDir}/${file.replace(/\.json$/, '.work.json')}`;
+          fs.writeFileSync(
+            workFilePath,
+            JSON.stringify(
+              {
+                events,
+                worker_dist_file: block.worker_dist_file,
+              },
+              null,
+              2,
+            ),
+          );
         }
       },
     },
@@ -137,16 +146,28 @@ export default defineConfig({
           const blockPath = path.join(blocksDir, file);
           let block = JSON.parse(fs.readFileSync(blockPath, 'utf-8'));
 
+          // Try to read work file for events and worker_dist_file
+          const workFilePath = blockPath.replace(/\.json$/, '.work.json');
+          let workData = null;
+          if (fs.existsSync(workFilePath)) {
+            workData = JSON.parse(fs.readFileSync(workFilePath, 'utf-8'));
+          }
+
           // Extract coordinates and dimensions
           const x = block.x ?? parseInt(match[1], 10);
           const y = block.y ?? parseInt(match[2], 10);
           const w = block.w ?? block.width ?? 1;
           const h = block.h ?? block.height ?? 1;
 
-          // Read source code from dist file
+          // Read source code from dist file (from work file if present)
           let src = '';
-          if (block.worker_dist_file) {
-            const distPath = path.join(blocksDir, block.worker_dist_file);
+          let workerDistFile =
+            workData?.worker_dist_file || block.worker_dist_file;
+          if (workerDistFile) {
+            const distPath = path.join(
+              blocksDir,
+              workerDistFile.replace(/^\.\//, ''),
+            );
             if (fs.existsSync(distPath)) {
               src = fs.readFileSync(distPath, 'utf-8');
             }
@@ -158,7 +179,7 @@ export default defineConfig({
             y,
             w,
             h,
-            events: block.events || {},
+            events: workData?.events || block.events || {},
             src,
           };
 
