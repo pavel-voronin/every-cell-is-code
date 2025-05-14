@@ -29,7 +29,7 @@ export type BlockMeta = {
   y: number;
   w: number;
   h: number;
-  url: string;
+  url?: string;
   events: BlockEvents;
   src?: string;
 };

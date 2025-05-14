@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import { version, preloadChunks } from './package.json';
 import fs from 'fs';
+import { CHUNK_SIZE } from './src/app/constants';
+import path from 'path';
 
 export default defineConfig({
   root: 'src',
@@ -57,40 +59,128 @@ export default defineConfig({
       },
     },
     {
-      name: 'inline-worker-source',
+      name: 'process-blocks-with-templated-workers',
       async buildStart() {
-        const metaDir = './src/public/meta';
-        const workerDir = './src/public/workers';
-        const chunkRe = /^chunk_(-?\d+)_(-?\d+)\.json$/;
-        for (const file of fs.readdirSync(metaDir)) {
-          if (!chunkRe.test(file)) continue;
-          const chunkPath = `${metaDir}/${file}`;
-          let changed = false;
-          let blocks = JSON.parse(fs.readFileSync(chunkPath, 'utf-8'));
-          for (const block of blocks) {
-            if (block.preload && block.url) {
-              // src is relative to meta, so resolve to workers dir
-              const srcPath = `${workerDir}/${block.url.replace('./workers/', '')}`;
+        const blocksDir = './src/public/blocks';
+        const blockRe = /^block_(-?\d+)_(-?\d+)\.json$/;
+        for (const file of fs.readdirSync(blocksDir)) {
+          const match = file.match(blockRe);
+          if (!match) continue;
+          const blockPath = `${blocksDir}/${file}`;
+          let block = JSON.parse(fs.readFileSync(blockPath, 'utf-8'));
 
-              if (fs.existsSync(srcPath)) {
-                block.src = fs.readFileSync(srcPath, 'utf-8');
-                changed = true;
-              }
+          if (block.type !== 'templated_worker') continue;
+
+          if (block.worker_dist_file === undefined) {
+            block.worker_dist_file = `./block_${match[1]}_${match[2]}.dist.js`;
+          }
+
+          if (block.template_file && block.worker_file) {
+            const templateFile = `${blocksDir}/${block.template_file}`;
+            const workerFile = `${blocksDir}/${block.worker_file}`;
+            const distPath = `${blocksDir}/${block.worker_dist_file}`;
+
+            if (fs.existsSync(templateFile) && fs.existsSync(workerFile)) {
+              const template = fs.readFileSync(templateFile, 'utf-8');
+              const worker = fs.readFileSync(workerFile, 'utf-8');
+              fs.writeFileSync(distPath, `${template}\n${worker}`);
             }
           }
-          if (changed) {
-            fs.writeFileSync(chunkPath, JSON.stringify(blocks, null, 2));
+
+          if (block.worker_file) {
+            const workerFile = `${blocksDir}/${block.worker_file}`;
+            const worker = fs.readFileSync(workerFile, 'utf-8');
+            const events = {
+              onPointerDown: 'pointerdown',
+              onPointerUp: 'pointerup',
+              onPointerMove: 'pointermove',
+              onKeyDown: 'keydown',
+              onKeyUp: 'keyup',
+              onWheel: 'wheel',
+            };
+
+            block.events = {};
+
+            Object.keys(events)
+              .filter((event) => worker.includes(`function ${event}`))
+              .forEach((event) => {
+                if (!block.events[event]) {
+                  block.events[events[event]] = true;
+                }
+              });
           }
+
+          fs.writeFileSync(blockPath, JSON.stringify(block, null, 2));
         }
       },
     },
     {
-      name: 'watch-meta-and-workers',
+      name: 'make-chunks',
+      async buildStart() {
+        const metaDir = './src/public/meta';
+        const blocksDir = './src/public/blocks';
+        const chunkRe = /^chunk_(-?\d+)_(-?\d+)\.json$/;
+        const blockRe = /^block_(-?\d+)_(-?\d+)\.json$/;
+
+        // 1. Remove old chunk files
+        for (const file of fs.readdirSync(metaDir)) {
+          if (chunkRe.test(file)) {
+            fs.unlinkSync(path.join(metaDir, file));
+          }
+        }
+
+        // 2. Collect and convert blocks
+        const chunks = new Map();
+        for (const file of fs.readdirSync(blocksDir)) {
+          const match = file.match(blockRe);
+          if (!match) continue;
+          const blockPath = path.join(blocksDir, file);
+          let block = JSON.parse(fs.readFileSync(blockPath, 'utf-8'));
+
+          // Extract coordinates and dimensions
+          const x = block.x ?? parseInt(match[1], 10);
+          const y = block.y ?? parseInt(match[2], 10);
+          const w = block.w ?? block.width ?? 1;
+          const h = block.h ?? block.height ?? 1;
+
+          // Read source code from dist file
+          let src = '';
+          if (block.worker_dist_file) {
+            const distPath = path.join(blocksDir, block.worker_dist_file);
+            if (fs.existsSync(distPath)) {
+              src = fs.readFileSync(distPath, 'utf-8');
+            }
+          }
+
+          // Compose new block structure
+          const newBlock = {
+            x,
+            y,
+            w,
+            h,
+            events: block.events || {},
+            src,
+          };
+
+          // Determine chunk coordinates
+          const chunkX = Math.floor(x / CHUNK_SIZE);
+          const chunkY = Math.floor(y / CHUNK_SIZE);
+          const chunkKey = `${chunkX}_${chunkY}`;
+          if (!chunks.has(chunkKey)) chunks.set(chunkKey, []);
+          chunks.get(chunkKey).push(newBlock);
+        }
+
+        // 3. Write new chunk files
+        for (const [chunkKey, blocks] of chunks.entries()) {
+          const chunkPath = path.join(metaDir, `chunk_${chunkKey}.json`);
+          fs.writeFileSync(chunkPath, JSON.stringify(blocks, null, 2));
+        }
+      },
+    },
+    {
+      name: 'watch-blocks',
       handleHotUpdate({ file, server }) {
-        if (
-          file.startsWith(server.config.root + '/public/meta') ||
-          file.startsWith(server.config.root + '/public/workers')
-        ) {
+        if (file.startsWith(server.config.root + '/public/blocks')) {
           server.restart();
         }
       },

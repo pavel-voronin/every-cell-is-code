@@ -1,2 +1,4 @@
 node_modules
 dist
+src/public/blocks/*.dist.js
+src/public/meta

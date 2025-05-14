@@ -24,12 +24,14 @@ export class Block {
   public xy: XY;
   public w: number;
   public h: number;
-  public url: string;
+  public url?: string;
   public src?: string;
   public events: BlockEvents;
 
   protected counter = 0;
   protected canvas: HTMLCanvasElement;
+  protected canvasContext: CanvasRenderingContext2D;
+  protected lastBitmap: ImageBitmap | null = null;
   protected rememberedEvents = new Map<
     number,
     { type: string; event: Event; timestamp: number }
@@ -67,23 +69,20 @@ export class Block {
       : 'auto';
     this.canvas.style.zIndex = '1';
 
+    this.canvasContext = this.canvas.getContext('2d')!;
+    this.canvasContext.imageSmoothingEnabled = false;
+
     this.initializeCanvasEventListener();
 
-    const offCanvas = this.canvas.transferControlToOffscreen();
-    offCanvas.width = width;
-    offCanvas.height = height;
-
-    eventBus.sync('camera:moved', (offset: XY, scale: number) => {
-      const px = (this.xy[0] * CELL_SIZE - offset[0]) * scale;
-      const py = (this.xy[1] * CELL_SIZE - offset[1]) * scale;
+    eventBus.sync('camera:moved', ([x, y]: XY, scale: number) => {
       this.scale = scale;
 
-      this.setCanvasPosition(
-        px,
-        py,
-        this.w * CELL_SIZE * scale,
-        this.h * CELL_SIZE * scale,
-      );
+      const new_x = Math.floor((this.xy[0] * CELL_SIZE - x) * scale);
+      const new_y = Math.floor((this.xy[1] * CELL_SIZE - y) * scale);
+      const new_w = Math.floor(this.w * CELL_SIZE * scale);
+      const new_h = Math.floor(this.h * CELL_SIZE * scale);
+
+      this.setCanvasPosition(new_x, new_y, new_w, new_h);
     });
 
     // Worker
@@ -94,22 +93,20 @@ export class Block {
           new Blob([this.src], { type: 'application/javascript' }),
         ),
       );
-    } else {
+    } else if (this.url) {
       this.worker = new Worker(this.url);
+    } else {
+      throw new Error('No worker URL or source provided');
     }
+
     this.initializeWorkerEventListeners();
 
-    this.worker.postMessage(
-      {
-        type: 'init',
-        width,
-        height,
-        wCells: this.w,
-        hCells: this.h,
-        offCanvas,
-      },
-      [offCanvas],
-    );
+    this.worker.postMessage({
+      type: 'init',
+      width,
+      height,
+      targetFPS: 60,
+    });
 
     this.cleanupOldEvents();
   }
@@ -188,6 +185,17 @@ export class Block {
       'message',
       (e: MessageEvent<WorkerMessage>) => {
         e.data.payload ??= {};
+
+        if (e.data.type === 'draw') {
+          this.lastBitmap = e.data.payload.bitmap as ImageBitmap;
+          this.canvasContext.drawImage(
+            this.lastBitmap,
+            0,
+            0,
+            this.w * CELL_SIZE * this.scale,
+            this.h * CELL_SIZE * this.scale,
+          );
+        }
 
         if (e.data.type === 'terminate') {
           eventBus.emit('block:terminate', this.xy);
@@ -347,10 +355,27 @@ export class Block {
     this.worker.postMessage(message, options);
   }
 
-  setCanvasPosition(x: number, y: number, w: number, h: number) {
+  async setCanvasPosition(x: number, y: number, w: number, h: number) {
     this.canvas.style.transform = `translate(${x}px, ${y}px)`;
-    this.canvas.style.width = `${w}px`;
-    this.canvas.style.height = `${h}px`;
+
+    // idea: return css based scaling as option
+
+    if (this.canvas.width !== w || this.canvas.height !== h) {
+      this.canvas.width = w;
+      this.canvas.height = h;
+
+      this.canvasContext.imageSmoothingEnabled = false;
+
+      if (this.lastBitmap) {
+        this.canvasContext.drawImage(
+          this.lastBitmap,
+          0,
+          0,
+          this.w * CELL_SIZE * this.scale,
+          this.h * CELL_SIZE * this.scale,
+        );
+      }
+    }
   }
 
   unload() {

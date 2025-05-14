@@ -19,7 +19,21 @@ export default defineConfig([
   },
   tseslint.configs.recommended,
   {
-    files: ['**/workers/*.js'],
+    files: ['**/blocks/*.js'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+    languageOptions: {
+      globals: {
+        ctx: 'readonly',
+        canvas: 'readonly',
+        width: 'readonly',
+        height: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['**/blocks/templates/*.js'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
     },
