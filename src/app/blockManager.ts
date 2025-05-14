@@ -46,15 +46,24 @@ export class BlockManager {
         for (let x = minX; x <= maxX; x++) {
           for (let y = minY; y <= maxY; y++) {
             if (currentRequestId !== this.visibleChunksRequestId) return;
-            if (!this.blocks.has([x, y])) {
-              this.spawn([x, y]);
+            const origin = this.metaManager.getBlockMeta(x, y);
+            if (!origin) {
+              continue;
+            }
+            if (!this.blocks.has([origin.x, origin.y])) {
+              this.spawn([origin.x, origin.y]);
             }
           }
         }
 
         if (currentRequestId === this.visibleChunksRequestId) {
           for (const [bx, by] of this.blocks.keys()) {
-            if (bx < minX || bx > maxX || by < minY || by > maxY) {
+            const blockMeta = this.metaManager.getBlockMeta(bx, by);
+            if (!blockMeta) continue;
+            const { x, y, w, h } = blockMeta;
+            const isOutside =
+              x + w - 1 < minX || x > maxX || y + h - 1 < minY || y > maxY;
+            if (isOutside) {
               const block = this.blocks.get([bx, by]);
               if (block) {
                 block.unload();
