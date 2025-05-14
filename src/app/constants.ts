@@ -1,7 +1,7 @@
-export const CHUNK_SIZE = 8; // gonna be 16 or so
+export const CHUNK_SIZE = 16;
 export const CELL_SIZE = 100;
 export const INITIAL_SCALE = 1.7;
-export const MIN_SCALE = 1.2;
+export const MIN_SCALE = 1;
 export const MAX_SCALE = 2.5;
 export const GRID_LINE_WIDTH = 1;
 export const GRID_FONT = `12px "JetBrains Mono", monospace`;
@@ -10,3 +10,4 @@ export const GRID_STROKE_STYLE = `#1C1C20`;
 export const TAP_THRESHOLD = 5;
 export const SCALE_STEP = 1.1;
 export const EVENT_RETENTION_TIMEOUT = 1000; // ms
+export const VISIBLE_AREA_MARGIN = 1;

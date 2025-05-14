@@ -9,6 +9,7 @@ import {
   MIN_SCALE,
   SCALE_STEP,
   TAP_THRESHOLD,
+  VISIBLE_AREA_MARGIN,
 } from './constants';
 import { XY, XYWH } from './types';
 import { eventBus } from './eventBus';
@@ -180,15 +181,20 @@ export class GridManager {
     this.emitVisibleAreaIfNeeded();
   }
 
-  // todo: may be premature optimization and out of domain logic. Think again later
   private emitVisibleAreaIfNeeded() {
     const worldWidth = this.canvas.width / this.scale;
     const worldHeight = this.canvas.height / this.scale;
 
-    const minVisibleX = Math.floor(this.offset[0] / CELL_SIZE);
-    const maxVisibleX = Math.floor((this.offset[0] + worldWidth) / CELL_SIZE);
-    const minVisibleY = Math.floor(this.offset[1] / CELL_SIZE);
-    const maxVisibleY = Math.floor((this.offset[1] + worldHeight) / CELL_SIZE);
+    const minVisibleX =
+      Math.floor(this.offset[0] / CELL_SIZE) - VISIBLE_AREA_MARGIN;
+    const maxVisibleX =
+      Math.floor((this.offset[0] + worldWidth) / CELL_SIZE) +
+      VISIBLE_AREA_MARGIN;
+    const minVisibleY =
+      Math.floor(this.offset[1] / CELL_SIZE) - VISIBLE_AREA_MARGIN;
+    const maxVisibleY =
+      Math.floor((this.offset[1] + worldHeight) / CELL_SIZE) +
+      VISIBLE_AREA_MARGIN;
 
     const newVisibleArea: [number, number, number, number] = [
       minVisibleX,
@@ -210,6 +216,7 @@ export class GridManager {
         minVisibleY,
         maxVisibleY,
       );
+
       this.lastVisibleArea = newVisibleArea;
     }
   }
