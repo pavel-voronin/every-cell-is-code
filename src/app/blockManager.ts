@@ -86,7 +86,13 @@ export class BlockManager {
     if (blockMeta) {
       if (this.blocks.has([blockMeta.x, blockMeta.y])) return;
 
-      this.blocks.set([x, y], new Block(this.context, this, blockMeta));
+      switch (blockMeta.type) {
+        case 'templated_worker':
+          this.blocks.set([x, y], new Block(this.context, this, blockMeta));
+          break;
+        default:
+          throw new Error(`Block type ${blockMeta.type} is not supported`);
+      }
     }
   }
 

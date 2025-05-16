@@ -179,6 +179,7 @@ export default defineConfig({
             y,
             w,
             h,
+            type: block.type,
             events: workData?.events || block.events || {},
             src,
           };

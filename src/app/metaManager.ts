@@ -76,6 +76,7 @@ export class MetaManager {
 
   protected addBlockMeta(meta: RawBlockMeta) {
     this.origins.set([meta.x, meta.y], {
+      type: meta.type,
       x: meta.x,
       y: meta.y,
       w: meta.w,

@@ -13,11 +13,12 @@ export type BlockEvents = {
 export type RawBlockEvents = Partial<BlockEvents> & { all?: boolean };
 
 export type RawBlockMeta = {
+  type: string;
   x: number;
   y: number;
   w: number;
   h: number;
-  url: string;
+  url?: string;
   events?: RawBlockEvents;
   src?: string;
 };
@@ -25,6 +26,7 @@ export type RawBlockMeta = {
 export type Chunk = RawBlockMeta[];
 
 export type BlockMeta = {
+  type: string;
   x: number;
   y: number;
   w: number;
