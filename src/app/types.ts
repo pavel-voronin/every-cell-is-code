@@ -35,3 +35,8 @@ export type BlockMeta = {
   events: BlockEvents;
   src?: string;
 };
+
+export type WorkerMessage<T extends object = Record<string, unknown>> = {
+  type: string;
+  payload?: T; // idea: pick serializable type
+};

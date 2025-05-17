@@ -1,13 +1,9 @@
-import { BlockManager } from './blockManager';
-import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from './constants';
-import { Context } from './context';
-import { eventBus } from './eventBus';
-import { BlockEvents, BlockMeta, XY } from './types';
-
-export type WorkerMessage<T extends object = Record<string, unknown>> = {
-  type: string;
-  payload?: T; // idea: pick serializable type
-};
+import { BlockManager } from '../blockManager';
+import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from '../constants';
+import { Context } from '../context';
+import { eventBus } from '../eventBus';
+import { BlockEvents, BlockMeta, WorkerMessage, XY } from '../types';
+import { Block, ReceivesMessage } from './interfaces';
 
 const Direction: Record<string, XY> = {
   n: [0, -1],
@@ -20,7 +16,7 @@ const Direction: Record<string, XY> = {
   nw: [-1, -1],
 };
 
-export class Block {
+export class TemplatedWorkerBlock implements Block, ReceivesMessage {
   public xy: XY;
   public w: number;
   public h: number;
@@ -159,6 +155,7 @@ export class Block {
               ) {
                 return [[from[0] + dir[0], from[1] + dir[1]]];
               }
+
               return [];
             },
           )

@@ -49,9 +49,9 @@ self.onmessage = function (e) {
       handleKeyDownEvent(data.event);
       break;
 
-    // case 'message':
-    //   handleMessage(data.from, data.payload);
-    //   break;
+    case 'message':
+      handleMessage(data.payload);
+      break;
 
     default:
       throw new Error(`Unknown message type: ${data.type}`);
@@ -162,13 +162,13 @@ function handleKeyDownEvent(payload) {
   }
 }
 
-// function handleMessage(from, payload) {
-//   if (!isActive) return;
+function handleMessage(payload) {
+  if (!isActive) return;
 
-//   if (typeof self.onMessage === 'function') {
-//     self.onMessage(from, payload);
-//   }
-// }
+  if (typeof self.onMessage === 'function') {
+    self.onMessage(payload);
+  }
+}
 
 function startRenderLoop() {
   if (!isActive || targetFPS <= 0 || typeof self.onUpdate !== 'function')

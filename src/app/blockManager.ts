@@ -1,4 +1,5 @@
-import { Block } from './block';
+import { Block, doesReceiveMessage } from './blocks/interfaces';
+import { TemplatedWorkerBlock } from './blocks/templated_worker';
 import { Context } from './context';
 import { eventBus } from './eventBus';
 import { MetaManager } from './metaManager';
@@ -88,7 +89,10 @@ export class BlockManager {
 
       switch (blockMeta.type) {
         case 'templated_worker':
-          this.blocks.set([x, y], new Block(this.context, this, blockMeta));
+          this.blocks.set(
+            [x, y],
+            new TemplatedWorkerBlock(this.context, this, blockMeta),
+          );
           break;
         default:
           throw new Error(`Block type ${blockMeta.type} is not supported`);
@@ -105,7 +109,7 @@ export class BlockManager {
 
     if (origin) {
       const block = this.blocks.get([origin.x, origin.y]);
-      if (block) {
+      if (block && doesReceiveMessage(block)) {
         const localFrom = [from[0] - origin.x, from[1] - origin.y];
         const localTo = [to[0] - origin.x, to[1] - origin.y];
 
