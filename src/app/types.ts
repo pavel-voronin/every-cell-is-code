@@ -21,6 +21,7 @@ export type RawBlockMeta = {
   url?: string;
   events?: RawBlockEvents;
   src?: string;
+  image_url?: string;
 };
 
 export type Chunk = RawBlockMeta[];
@@ -34,6 +35,7 @@ export type BlockMeta = {
   url?: string;
   events: BlockEvents;
   src?: string;
+  image_url?: string;
 };
 
 export type WorkerMessage<T extends object = Record<string, unknown>> = {

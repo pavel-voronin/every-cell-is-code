@@ -10,6 +10,7 @@ import {
 import { eventBus } from './eventBus';
 import { TupleMap } from './structures/tuppleMap';
 import knownChunks from './knownChunks';
+import { blockMetaConverters } from './blockMetaFactory';
 
 enum ChunkStatus {
   Loading = 'loading',
@@ -75,16 +76,12 @@ export class MetaManager {
   }
 
   protected addBlockMeta(meta: RawBlockMeta) {
-    this.origins.set([meta.x, meta.y], {
-      type: meta.type,
-      x: meta.x,
-      y: meta.y,
-      w: meta.w,
-      h: meta.h,
-      url: meta.url,
-      src: meta.src,
-      events: this.resolveBlockEvents(meta.events),
-    });
+    const converter = blockMetaConverters[meta.type];
+    if (!converter) {
+      throw new Error(`Unknown block type: ${meta.type}`);
+    }
+    const blockMeta = converter(meta);
+    this.origins.set([meta.x, meta.y], blockMeta);
 
     for (let dx = 0; dx < meta.w; dx++) {
       for (let dy = 0; dy < meta.h; dy++) {
@@ -116,7 +113,7 @@ export class MetaManager {
 
     this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Loading);
     const url = `./meta/chunk_${chunkX}_${chunkY}.json`;
-    fetch(url)
+    await fetch(url)
       .then(async (res) => {
         if (!res.ok) {
           this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);

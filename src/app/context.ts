@@ -10,4 +10,10 @@ export class Context {
     this.document.body.appendChild(canvas);
     return canvas;
   }
+
+  createImageElement(): HTMLImageElement {
+    const image = this.document.createElement('img');
+    this.document.body.appendChild(image);
+    return image;
+  }
 }

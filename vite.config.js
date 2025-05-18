@@ -173,16 +173,29 @@ export default defineConfig({
             }
           }
 
+          let newBlock;
           // Compose new block structure
-          const newBlock = {
-            x,
-            y,
-            w,
-            h,
-            type: block.type,
-            events: workData?.events || block.events || {},
-            src,
-          };
+          if (block.type === 'templated_worker') {
+            newBlock = {
+              x,
+              y,
+              w,
+              h,
+              type: block.type,
+              events: workData?.events || block.events || {},
+              src,
+            };
+          } else if (block.type === 'image') {
+            newBlock = {
+              x,
+              y,
+              w,
+              h,
+              type: block.type,
+              events: workData?.events || block.events || {},
+              image_url: block.image_url,
+            };
+          }
 
           // Determine chunk coordinates
           const chunkX = Math.floor(x / CHUNK_SIZE);

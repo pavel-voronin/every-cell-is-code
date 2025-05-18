@@ -1,5 +1,6 @@
+import { ImageBlock } from './blocks/imageBlock';
 import { Block, doesReceiveMessage } from './blocks/interfaces';
-import { TemplatedWorkerBlock } from './blocks/templated_worker';
+import { TemplatedWorkerBlock } from './blocks/templatedWorkerBlock';
 import { Context } from './context';
 import { eventBus } from './eventBus';
 import { MetaManager } from './metaManager';
@@ -94,6 +95,12 @@ export class BlockManager {
             new TemplatedWorkerBlock(this.context, this, blockMeta),
           );
           break;
+        case 'image':
+          this.blocks.set(
+            [x, y],
+            new ImageBlock(this.context, this, blockMeta),
+          );
+          break;
         default:
           throw new Error(`Block type ${blockMeta.type} is not supported`);
       }
@@ -123,9 +130,5 @@ export class BlockManager {
         });
       }
     }
-  }
-
-  getBlocks() {
-    return this.blocks.values();
   }
 }
