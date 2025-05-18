@@ -1,7 +1,6 @@
 import { ImageBlock } from './blocks/imageBlock';
 import { Block, doesReceiveMessage } from './blocks/interfaces';
 import { TemplatedWorkerBlock } from './blocks/templatedWorkerBlock';
-import { Context } from './context';
 import { eventBus } from './eventBus';
 import { MetaManager } from './metaManager';
 import { TupleMap } from './structures/tuppleMap';
@@ -11,10 +10,7 @@ export class BlockManager {
   protected blocks = new TupleMap<Block>();
   private visibleChunksRequestId = 0;
 
-  constructor(
-    protected context: Context,
-    protected metaManager: MetaManager,
-  ) {
+  constructor(protected metaManager: MetaManager) {
     eventBus.on('block:worker-error', (xy: XY) => {
       const block = this.blocks.get(xy);
       if (block) {
@@ -90,16 +86,10 @@ export class BlockManager {
 
       switch (blockMeta.type) {
         case 'templated_worker':
-          this.blocks.set(
-            [x, y],
-            new TemplatedWorkerBlock(this.context, this, blockMeta),
-          );
+          this.blocks.set([x, y], new TemplatedWorkerBlock(this, blockMeta));
           break;
         case 'image':
-          this.blocks.set(
-            [x, y],
-            new ImageBlock(this.context, this, blockMeta),
-          );
+          this.blocks.set([x, y], new ImageBlock(this, blockMeta));
           break;
         default:
           throw new Error(`Block type ${blockMeta.type} is not supported`);

@@ -2,33 +2,29 @@ import { BlockManager } from './blockManager';
 import { MetaManager } from './metaManager';
 import { GridManager } from './gridManager';
 import { eventBus } from './eventBus';
-import { Context } from './context';
 
 export class App {
   protected gridManager: GridManager;
   protected metaManager = new MetaManager();
   protected blockManager: BlockManager;
 
-  constructor(
-    protected context: Context,
-    protected canvas: HTMLCanvasElement,
-  ) {
+  constructor(protected canvas: HTMLCanvasElement) {
     // Browser specific preparations
 
     this.stopTouchEvents();
 
-    this.context.window.addEventListener('resize', (e: Event) => {
+    window.addEventListener('resize', (e: Event) => {
       eventBus.emit(
         'window:resize',
         (e.target as Window).innerWidth,
         (e.target as Window).innerHeight,
       );
     });
-    this.context.window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
 
     // App specific preparations
 
-    this.blockManager = new BlockManager(this.context, this.metaManager);
+    this.blockManager = new BlockManager(this.metaManager);
 
     ('__PRELOAD_CHUNKS__'); // eslint-disable-line @typescript-eslint/no-unused-expressions
 
@@ -36,17 +32,15 @@ export class App {
   }
 
   protected stopTouchEvents() {
-    this.context.document.addEventListener(
-      'touchstart',
-      (e) => e.preventDefault(),
-      { passive: false, capture: true },
-    );
-    this.context.document.addEventListener(
-      'touchmove',
-      (e) => e.preventDefault(),
-      { passive: false, capture: true },
-    );
-    this.context.document.addEventListener(
+    document.addEventListener('touchstart', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
+    document.addEventListener('touchmove', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
+    document.addEventListener(
       'touchend',
       (e: TouchEvent) => {
         e.preventDefault();
@@ -58,10 +52,9 @@ export class App {
       },
       { passive: false, capture: true },
     );
-    this.context.document.addEventListener(
-      'touchcancel',
-      (e) => e.preventDefault(),
-      { passive: false, capture: true },
-    );
+    document.addEventListener('touchcancel', (e) => e.preventDefault(), {
+      passive: false,
+      capture: true,
+    });
   }
 }

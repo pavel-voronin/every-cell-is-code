@@ -1,10 +1,8 @@
-import { Context } from '../context.ts';
-
-export function setupInfoBlockLogic(context: Context) {
-  const infoBlock = context.document.getElementById('infoBlock');
-  const infoBlockContent = context.document.getElementById('infoBlockContent');
-  const collapseBtn = context.document.getElementById('collapseInfoBlock');
-  const expandBtn = context.document.getElementById('expandInfoBlock');
+export function setupInfoBlockLogic() {
+  const infoBlock = document.getElementById('infoBlock');
+  const infoBlockContent = document.getElementById('infoBlockContent');
+  const collapseBtn = document.getElementById('collapseInfoBlock');
+  const expandBtn = document.getElementById('expandInfoBlock');
 
   function attachInfoBtnPointerHandlers(
     btn: HTMLElement | null,
@@ -45,14 +43,14 @@ export function setupInfoBlockLogic(context: Context) {
   attachInfoBtnPointerHandlers(expandBtn, () => setExpanded(true));
 
   function isMobile() {
-    return context.window.innerWidth <= 640;
+    return window.innerWidth <= 640;
   }
 
   function getSavedState() {
-    return context.storage.getItem('infoBlockState');
+    return localStorage.getItem('infoBlockState');
   }
   function saveState(state: string) {
-    context.storage.setItem('infoBlockState', state);
+    localStorage.setItem('infoBlockState', state);
   }
 
   function setExpanded(expanded: boolean, save = true) {

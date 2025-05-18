@@ -1,16 +1,11 @@
-import { Context } from '../context.ts';
-
-export function setupNavBlockLogic(
-  context: Context,
-  jumpTo: (x: number, y: number) => void,
-) {
-  const navJumpForm = context.document.getElementById(
+export function setupNavBlockLogic(jumpTo: (x: number, y: number) => void) {
+  const navJumpForm = document.getElementById(
     'navJumpForm',
   ) as HTMLFormElement | null;
-  const navInputX = context.document.getElementById(
+  const navInputX = document.getElementById(
     'navInputX',
   ) as HTMLInputElement | null;
-  const navInputY = context.document.getElementById(
+  const navInputY = document.getElementById(
     'navInputY',
   ) as HTMLInputElement | null;
 

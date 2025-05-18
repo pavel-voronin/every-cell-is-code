@@ -1,6 +1,5 @@
 import { BlockManager } from '../blockManager';
 import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from '../constants';
-import { Context } from '../context';
 import { eventBus } from '../eventBus';
 import { BlockEvents, BlockMeta, WorkerMessage, XY } from '../types';
 import { Block, ReceivesMessage } from './interfaces';
@@ -37,7 +36,6 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
   protected worker: Worker;
 
   constructor(
-    protected context: Context,
     protected blockManager: BlockManager,
     meta: BlockMeta,
   ) {
@@ -53,7 +51,9 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
     const width = CELL_SIZE * this.w;
     const height = CELL_SIZE * this.h;
 
-    this.canvas = this.context.createCanvasElement();
+    this.canvas = document.createElement('canvas');
+    document.body.appendChild(this.canvas);
+
     this.canvas.width = width;
     this.canvas.height = height;
     this.canvas.tabIndex = -1;

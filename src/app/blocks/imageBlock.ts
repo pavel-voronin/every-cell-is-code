@@ -1,6 +1,5 @@
 import { BlockManager } from '../blockManager';
 import { CELL_SIZE } from '../constants';
-import { Context } from '../context';
 import { eventBus } from '../eventBus';
 import { BlockMeta, XY } from '../types';
 import { Block } from './interfaces';
@@ -14,14 +13,14 @@ export class ImageBlock implements Block {
   protected image: HTMLImageElement;
 
   constructor(
-    protected context: Context,
     protected blockManager: BlockManager,
     meta: BlockMeta,
   ) {
     this.xy = [meta.x, meta.y];
     this.w = meta.w;
     this.h = meta.h;
-    this.image = context.createImageElement();
+    this.image = document.createElement('img');
+    document.body.appendChild(this.image);
     this.image.src = meta.image_url!;
     this.image.style.pointerEvents = 'none';
 
