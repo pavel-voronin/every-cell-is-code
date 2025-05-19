@@ -156,8 +156,8 @@ export default defineConfig({
           // Extract coordinates and dimensions
           const x = block.x ?? parseInt(match[1], 10);
           const y = block.y ?? parseInt(match[2], 10);
-          const w = block.w ?? block.width ?? 1;
-          const h = block.h ?? block.height ?? 1;
+          const w = block.w ?? 1;
+          const h = block.h ?? 1;
 
           // Read source code from dist file (from work file if present)
           let src = '';
@@ -177,21 +177,21 @@ export default defineConfig({
           // Compose new block structure
           if (block.type === 'templated_worker') {
             newBlock = {
+              type: block.type,
               x,
               y,
               w,
               h,
-              type: block.type,
               events: workData?.events || block.events || {},
               src,
             };
           } else if (block.type === 'image') {
             newBlock = {
+              type: block.type,
               x,
               y,
               w,
               h,
-              type: block.type,
               events: workData?.events || block.events || {},
               image_url: block.image_url,
             };

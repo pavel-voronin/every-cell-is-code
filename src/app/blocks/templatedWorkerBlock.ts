@@ -1,8 +1,7 @@
-import { BlockManager } from '../blockManager';
 import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from '../constants';
 import { eventBus } from '../eventBus';
-import { BlockEvents, BlockMeta, WorkerMessage, XY } from '../types';
-import { Block, ReceivesMessage } from './interfaces';
+import { BlockEvents, BlockMeta, WorkerMessage, XY, XYWH } from '../types';
+import { IBlock, IRenderable, ReceivesMessage } from './interfaces';
 
 const Direction: Record<string, XY> = {
   n: [0, -1],
@@ -15,16 +14,18 @@ const Direction: Record<string, XY> = {
   nw: [-1, -1],
 };
 
-export class TemplatedWorkerBlock implements Block, ReceivesMessage {
+export class TemplatedWorkerBlock
+  implements IBlock, IRenderable, ReceivesMessage
+{
   public xy: XY;
-  public w: number;
-  public h: number;
+  public wh: XY;
+
   public url?: string;
   public src?: string;
   public events: BlockEvents;
 
   protected counter = 0;
-  protected canvas: HTMLCanvasElement;
+  element: HTMLCanvasElement;
   protected canvasContext: CanvasRenderingContext2D;
   protected lastBitmap: ImageBitmap | null = null;
   protected rememberedEvents = new Map<
@@ -34,52 +35,40 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
   protected scale: number = 1.0;
 
   protected worker: Worker;
+  protected cleanupOldEventsInterval?: ReturnType<typeof setInterval>;
 
-  constructor(
-    protected blockManager: BlockManager,
-    meta: BlockMeta,
-  ) {
+  constructor(meta: BlockMeta) {
     this.xy = [meta.x, meta.y];
-    this.w = meta.w;
-    this.h = meta.h;
+    this.wh = [meta.w, meta.h];
     this.url = meta.url;
     this.src = meta.src;
     this.events = meta.events;
 
     // Canvas
 
-    const width = CELL_SIZE * this.w;
-    const height = CELL_SIZE * this.h;
+    const width = CELL_SIZE * this.wh[0];
+    const height = CELL_SIZE * this.wh[1];
 
-    this.canvas = document.createElement('canvas');
-    document.body.appendChild(this.canvas);
+    this.element = document.createElement('canvas');
+    document.body.appendChild(this.element);
 
-    this.canvas.width = width;
-    this.canvas.height = height;
-    this.canvas.tabIndex = -1;
-    this.canvas.style.position = 'absolute';
-    this.canvas.style.pointerEvents = Object.values(this.events).every(
+    this.element.width = width;
+    this.element.height = height;
+    this.element.tabIndex = -1;
+    this.element.style.position = 'absolute';
+    this.element.style.pointerEvents = Object.values(this.events).every(
       (v) => v === false,
     )
       ? 'none'
       : 'auto';
-    this.canvas.style.zIndex = '1';
+    this.element.style.zIndex = '1';
 
-    this.canvasContext = this.canvas.getContext('2d')!;
+    this.canvasContext = this.element.getContext('2d')!;
     this.canvasContext.imageSmoothingEnabled = false;
 
     this.initializeCanvasEventListener();
 
-    eventBus.sync('camera:moved', ([x, y]: XY, scale: number) => {
-      this.scale = scale;
-
-      const new_x = Math.floor((this.xy[0] * CELL_SIZE - x) * scale);
-      const new_y = Math.floor((this.xy[1] * CELL_SIZE - y) * scale);
-      const new_w = Math.floor(this.w * CELL_SIZE * scale);
-      const new_h = Math.floor(this.h * CELL_SIZE * scale);
-
-      this.setCanvasPosition(new_x, new_y, new_w, new_h);
-    });
+    eventBus.sync('camera:moved', this.cameraMovedHandler);
 
     // Worker
 
@@ -107,6 +96,17 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
     this.cleanupOldEvents();
   }
 
+  cameraMovedHandler = ([x, y]: XY, scale: number) => {
+    this.scale = scale;
+
+    const new_x = Math.floor((this.xy[0] * CELL_SIZE - x) * scale);
+    const new_y = Math.floor((this.xy[1] * CELL_SIZE - y) * scale);
+    const new_w = Math.floor(this.wh[0] * CELL_SIZE * scale);
+    const new_h = Math.floor(this.wh[1] * CELL_SIZE * scale);
+
+    this.position([new_x, new_y, new_w, new_h]);
+  };
+
   protected reEmitEvent(eventId: number) {
     const rememberedEvent = this.rememberedEvents.get(eventId)?.event;
 
@@ -126,7 +126,12 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
         ? (payload.from as XY)
         : [0, 0];
 
-    if (from[0] < 0 || from[0] >= this.w || from[1] < 0 || from[1] >= this.h) {
+    if (
+      from[0] < 0 ||
+      from[0] >= this.wh[0] ||
+      from[1] < 0 ||
+      from[1] >= this.wh[1]
+    ) {
       return;
     }
 
@@ -166,14 +171,16 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
           coords.length === 2 &&
           coords.every((coord) => typeof coord === 'number'),
       )
-      .filter(([tx, ty]) => tx < 0 || tx >= this.w || ty < 0 || ty >= this.h)
+      .filter(
+        ([tx, ty]) => tx < 0 || tx >= this.wh[0] || ty < 0 || ty >= this.wh[1],
+      )
       .map(([tx, ty]) => [
         this.xy[0] + from[0] + tx,
         this.xy[1] + from[1] + ty,
       ]);
 
     to.forEach((globalTo) => {
-      this.blockManager.sendMessage(globalFrom, globalTo, payload);
+      eventBus.emit('block:sendMessage', globalFrom, globalTo, payload);
     });
   }
 
@@ -183,30 +190,31 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
       (e: MessageEvent<WorkerMessage>) => {
         e.data.payload ??= {};
 
-        if (e.data.type === 'draw') {
-          this.lastBitmap = e.data.payload.bitmap as ImageBitmap;
-          this.canvasContext.drawImage(
-            this.lastBitmap,
-            0,
-            0,
-            this.w * CELL_SIZE * this.scale,
-            this.h * CELL_SIZE * this.scale,
-          );
-        }
-
-        if (e.data.type === 'terminate') {
-          eventBus.emit('block:terminate', this.xy);
-        }
-
-        if (e.data.type === 're-emit') {
-          if (
-            e.data.payload.eventId &&
-            typeof e.data.payload.eventId === 'number'
-          ) {
-            this.reEmitEvent(e.data.payload.eventId);
-          }
-        } else if (e.data.type === 'message') {
-          this.sendMessage(e.data.payload);
+        switch (e.data.type) {
+          case 'draw':
+            this.lastBitmap = e.data.payload.bitmap as ImageBitmap;
+            this.canvasContext.drawImage(
+              this.lastBitmap,
+              0,
+              0,
+              this.wh[0] * CELL_SIZE * this.scale,
+              this.wh[1] * CELL_SIZE * this.scale,
+            );
+            break;
+          case 'terminate':
+            eventBus.emit('block:terminate', this.xy);
+            break;
+          case 're-emit':
+            if (
+              e.data.payload.eventId &&
+              typeof e.data.payload.eventId === 'number'
+            ) {
+              this.reEmitEvent(e.data.payload.eventId);
+            }
+            break;
+          case 'message':
+            this.sendMessage(e.data.payload);
+            break;
         }
       },
     );
@@ -222,7 +230,7 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
 
   // Periodically clean up old remembered events
   protected cleanupOldEvents() {
-    setInterval(() => {
+    this.cleanupOldEventsInterval = setInterval(() => {
       const now = Date.now();
       for (const [eventId, { timestamp }] of this.rememberedEvents.entries()) {
         if (now - timestamp > EVENT_RETENTION_TIMEOUT) {
@@ -241,12 +249,12 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
   }
 
   protected initializeCanvasEventListener() {
-    this.canvas.addEventListener('pointerenter', () => {
-      this.canvas.focus();
+    this.element.addEventListener('pointerenter', () => {
+      this.element.focus();
     });
 
     if (this.events.wheel) {
-      this.canvas.addEventListener('wheel', (e: WheelEvent) => {
+      this.element.addEventListener('wheel', (e: WheelEvent) => {
         e.preventDefault();
         const x = e.offsetX / this.scale;
         const y = e.offsetY / this.scale;
@@ -260,13 +268,13 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
         });
       });
     } else {
-      this.canvas.addEventListener('wheel', (e: WheelEvent) => {
+      this.element.addEventListener('wheel', (e: WheelEvent) => {
         eventBus.emit('wheel', new WheelEvent(e.type, e));
       });
     }
 
     if (this.events.pointerdown) {
-      this.canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+      this.element.addEventListener('pointerdown', (e: PointerEvent) => {
         const x = e.offsetX / this.scale;
         const y = e.offsetY / this.scale;
         const pointerId = e.pointerId;
@@ -278,13 +286,13 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
         });
       });
     } else {
-      this.canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+      this.element.addEventListener('pointerdown', (e: PointerEvent) => {
         eventBus.emit('pointerdown', new PointerEvent(e.type, e));
       });
     }
 
     if (this.events.pointerup) {
-      this.canvas.addEventListener('pointerup', (e: PointerEvent) => {
+      this.element.addEventListener('pointerup', (e: PointerEvent) => {
         const x = e.offsetX / this.scale;
         const y = e.offsetY / this.scale;
         const pointerId = e.pointerId;
@@ -296,13 +304,13 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
         });
       });
     } else {
-      this.canvas.addEventListener('pointerup', (e: PointerEvent) => {
+      this.element.addEventListener('pointerup', (e: PointerEvent) => {
         eventBus.emit('pointerup', new PointerEvent(e.type, e));
       });
     }
 
     if (this.events.pointermove) {
-      this.canvas.addEventListener('pointermove', (e: PointerEvent) => {
+      this.element.addEventListener('pointermove', (e: PointerEvent) => {
         const x = e.offsetX / this.scale;
         const y = e.offsetY / this.scale;
         const pointerId = e.pointerId;
@@ -314,13 +322,13 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
         });
       });
     } else {
-      this.canvas.addEventListener('pointermove', (e: PointerEvent) => {
+      this.element.addEventListener('pointermove', (e: PointerEvent) => {
         eventBus.emit('pointermove', new PointerEvent(e.type, e));
       });
     }
 
     if (this.events.keydown) {
-      this.canvas.addEventListener('keydown', (e: KeyboardEvent) => {
+      this.element.addEventListener('keydown', (e: KeyboardEvent) => {
         const code = e.code;
         const eventId = this.nextEventId();
         this.rememberEvent('keydown', eventId, e);
@@ -332,7 +340,7 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
     }
 
     if (this.events.keyup) {
-      this.canvas.addEventListener('keyup', (e: KeyboardEvent) => {
+      this.element.addEventListener('keyup', (e: KeyboardEvent) => {
         const code = e.code;
         const eventId = this.nextEventId();
         this.rememberEvent('keyup', eventId, e);
@@ -352,14 +360,14 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
     this.worker.postMessage(message, options);
   }
 
-  async setCanvasPosition(x: number, y: number, w: number, h: number) {
-    this.canvas.style.transform = `translate(${x}px, ${y}px)`;
+  position([x, y, w, h]: XYWH) {
+    this.element.style.transform = `translate(${x}px, ${y}px)`;
 
     // idea: return css based scaling as option
 
-    if (this.canvas.width !== w || this.canvas.height !== h) {
-      this.canvas.width = w;
-      this.canvas.height = h;
+    if (this.element.width !== w || this.element.height !== h) {
+      this.element.width = w;
+      this.element.height = h;
 
       this.canvasContext.imageSmoothingEnabled = false;
 
@@ -368,15 +376,19 @@ export class TemplatedWorkerBlock implements Block, ReceivesMessage {
           this.lastBitmap,
           0,
           0,
-          this.w * CELL_SIZE * this.scale,
-          this.h * CELL_SIZE * this.scale,
+          this.wh[0] * CELL_SIZE * this.scale,
+          this.wh[1] * CELL_SIZE * this.scale,
         );
       }
     }
   }
 
   unload() {
+    if (this.cleanupOldEventsInterval) {
+      clearInterval(this.cleanupOldEventsInterval);
+    }
+    eventBus.off('camera:moved', this.cameraMovedHandler);
     this.worker.terminate();
-    this.canvas.remove();
+    this.element.remove();
   }
 }

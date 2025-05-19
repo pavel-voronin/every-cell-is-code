@@ -1,12 +1,5 @@
 import { CHUNK_SIZE } from './constants';
-import {
-  BlockEvents,
-  BlockMeta,
-  Chunk,
-  RawBlockEvents,
-  RawBlockMeta,
-  XY,
-} from './types';
+import { BlockMeta, Chunk, RawBlockMeta, XY } from './types';
 import { eventBus } from './eventBus';
 import { TupleMap } from './structures/tuppleMap';
 import knownChunks from './knownChunks';
@@ -42,17 +35,6 @@ export class MetaManager {
         }
       },
     );
-  }
-
-  protected resolveBlockEvents(events: RawBlockEvents = {}): BlockEvents {
-    return {
-      wheel: events.wheel ?? events.all ?? false,
-      pointerdown: events.pointerdown ?? events.all ?? false,
-      pointerup: events.pointerup ?? events.all ?? false,
-      pointermove: events.pointermove ?? events.all ?? false,
-      keydown: events.keydown ?? events.all ?? false,
-      keyup: events.keyup ?? events.all ?? false,
-    };
   }
 
   protected validateChunk(chunk: unknown): chunk is Chunk {

@@ -1,7 +1,14 @@
-import { WorkerMessage } from '../types';
+import { WorkerMessage, XY, XYWH } from '../types';
 
-export interface Block {
+export interface IBlock {
+  xy: XY;
+  wh: XY;
   unload: () => void;
+}
+
+export interface IRenderable {
+  element: HTMLElement;
+  position: (xywh: XYWH) => void;
 }
 
 export interface ReceivesMessage {

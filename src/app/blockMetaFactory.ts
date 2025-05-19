@@ -5,12 +5,12 @@ export type TemplatedWorkerBlockMeta = BlockMeta & { src: string };
 
 function resolveBlockEvents(events: RawBlockMeta['events'] = {}): BlockEvents {
   return {
-    wheel: events?.wheel ?? events?.all ?? false,
-    pointerdown: events?.pointerdown ?? events?.all ?? false,
-    pointerup: events?.pointerup ?? events?.all ?? false,
-    pointermove: events?.pointermove ?? events?.all ?? false,
-    keydown: events?.keydown ?? events?.all ?? false,
-    keyup: events?.keyup ?? events?.all ?? false,
+    wheel: events?.wheel ?? false,
+    pointerdown: events?.pointerdown ?? false,
+    pointerup: events?.pointerup ?? false,
+    pointermove: events?.pointermove ?? false,
+    keydown: events?.keydown ?? false,
+    keyup: events?.keyup ?? false,
   };
 }
 

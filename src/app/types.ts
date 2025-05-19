@@ -10,8 +10,6 @@ export type BlockEvents = {
   keyup: boolean;
 };
 
-export type RawBlockEvents = Partial<BlockEvents> & { all?: boolean };
-
 export type RawBlockMeta = {
   type: string;
   x: number;
@@ -19,7 +17,7 @@ export type RawBlockMeta = {
   w: number;
   h: number;
   url?: string;
-  events?: RawBlockEvents;
+  events?: Partial<BlockEvents>;
   src?: string;
   image_url?: string;
 };
