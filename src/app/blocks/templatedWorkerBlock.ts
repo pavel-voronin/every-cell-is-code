@@ -1,22 +1,9 @@
 import { CELL_SIZE, EVENT_RETENTION_TIMEOUT } from '../constants';
 import { eventBus } from '../eventBus';
 import { BlockEvents, BlockMeta, WorkerMessage, XY, XYWH } from '../types';
-import { IBlock, IRenderable, ReceivesMessage } from './interfaces';
+import { IBlock, IRenderable } from './interfaces';
 
-const Direction: Record<string, XY> = {
-  n: [0, -1],
-  ne: [1, -1],
-  e: [1, 0],
-  se: [1, 1],
-  s: [0, 1],
-  sw: [-1, 1],
-  w: [-1, 0],
-  nw: [-1, -1],
-};
-
-export class TemplatedWorkerBlock
-  implements IBlock, IRenderable, ReceivesMessage
-{
+export class TemplatedWorkerBlock implements IBlock, IRenderable {
   public xy: XY;
   public wh: XY;
 
@@ -116,74 +103,6 @@ export class TemplatedWorkerBlock
     }
   }
 
-  protected sendMessage(payload: Record<string, unknown>) {
-    // 'from' should belong to the block
-
-    const from: XY =
-      Array.isArray(payload.from) &&
-      payload.from.length === 2 &&
-      payload.from.every((coord) => Number.isInteger(coord))
-        ? (payload.from as XY)
-        : [0, 0];
-
-    if (
-      from[0] < 0 ||
-      from[0] >= this.wh[0] ||
-      from[1] < 0 ||
-      from[1] >= this.wh[1]
-    ) {
-      return;
-    }
-
-    const globalFrom: XY = [this.xy[0] + from[0], this.xy[1] + from[1]];
-
-    // 'to' should point outside
-
-    // `to` can be undefined (all directions) or be in formats:
-    //
-    //  - 'n' -- string, e.g. w, ne, s, etc.
-    //  - [0, 1] -- relative coords (vector length = 1 at most)
-    //  - ['n', 's'] -- array of strings
-    //  - ['n', [1, 0]] -- array of mixed
-
-    const to: XY[] = (
-      payload.to
-        ? (Array.isArray(payload.to) ? payload.to : [payload.to]).flatMap(
-            (dir) => {
-              if (typeof dir === 'string' && dir in Direction) {
-                const d = Direction[dir as keyof typeof Direction];
-                return [[from[0] + d[0], from[1] + d[1]]];
-              } else if (
-                Array.isArray(dir) &&
-                dir.length === 2 &&
-                dir.every((coord) => Number.isInteger(coord))
-              ) {
-                return [[from[0] + dir[0], from[1] + dir[1]]];
-              }
-
-              return [];
-            },
-          )
-        : Object.values(Direction).map((d) => [from[0] + d[0], from[1] + d[1]])
-    )
-      .filter(
-        (coords): coords is XY =>
-          coords.length === 2 &&
-          coords.every((coord) => typeof coord === 'number'),
-      )
-      .filter(
-        ([tx, ty]) => tx < 0 || tx >= this.wh[0] || ty < 0 || ty >= this.wh[1],
-      )
-      .map(([tx, ty]) => [
-        this.xy[0] + from[0] + tx,
-        this.xy[1] + from[1] + ty,
-      ]);
-
-    to.forEach((globalTo) => {
-      eventBus.emit('block:sendMessage', globalFrom, globalTo, payload);
-    });
-  }
-
   protected initializeWorkerEventListeners() {
     this.worker.addEventListener(
       'message',
@@ -211,9 +130,6 @@ export class TemplatedWorkerBlock
             ) {
               this.reEmitEvent(e.data.payload.eventId);
             }
-            break;
-          case 'message':
-            this.sendMessage(e.data.payload);
             break;
         }
       },

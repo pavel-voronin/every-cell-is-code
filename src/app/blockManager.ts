@@ -1,5 +1,5 @@
 import { ImageBlock } from './blocks/imageBlock';
-import { IBlock, doesReceiveMessage } from './blocks/interfaces';
+import { IBlock } from './blocks/interfaces';
 import { TemplatedWorkerBlock } from './blocks/templatedWorkerBlock';
 import { eventBus } from './eventBus';
 import { MetaManager } from './metaManager';
@@ -72,10 +72,6 @@ export class BlockManager {
         }
       },
     );
-
-    eventBus.on('block:sendMessage', (from, to, payload) => {
-      this.sendMessage(from, to, payload);
-    });
   }
 
   async spawn([x, y]: XY) {
@@ -97,31 +93,6 @@ export class BlockManager {
           break;
         default:
           throw new Error(`Block type ${blockMeta.type} is not supported`);
-      }
-    }
-  }
-
-  sendMessage(
-    from: [number, number],
-    to: [number, number],
-    payload: Record<string, unknown>,
-  ) {
-    const origin = this.metaManager.getBlockMeta(to[0], to[1]);
-
-    if (origin) {
-      const block = this.blocks.get([origin.x, origin.y]);
-      if (block && doesReceiveMessage(block)) {
-        const localFrom = [from[0] - origin.x, from[1] - origin.y];
-        const localTo = [to[0] - origin.x, to[1] - origin.y];
-
-        block.postMessage({
-          type: 'message',
-          payload: {
-            ...payload,
-            from: localFrom,
-            to: localTo,
-          },
-        });
       }
     }
   }
