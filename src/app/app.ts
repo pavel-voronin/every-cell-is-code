@@ -1,7 +1,7 @@
 import { BlockManager } from './blockManager';
 import { MetaManager } from './metaManager';
 import { GridManager } from './gridManager';
-import { eventBus } from './eventBus';
+import { eventBus } from './communications/eventBus';
 
 export class App {
   protected gridManager: GridManager;

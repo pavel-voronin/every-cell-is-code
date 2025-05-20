@@ -1,7 +1,7 @@
 import { ImageBlock } from './blocks/imageBlock';
 import { IBlock } from './blocks/interfaces';
 import { TemplatedWorkerBlock } from './blocks/templatedWorkerBlock';
-import { eventBus } from './eventBus';
+import { eventBus } from './communications/eventBus';
 import { MetaManager } from './metaManager';
 import { TupleMap } from './structures/tuppleMap';
 import { XY } from './types';

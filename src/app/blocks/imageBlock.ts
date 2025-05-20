@@ -1,5 +1,5 @@
 import { CELL_SIZE } from '../constants';
-import { eventBus } from '../eventBus';
+import { eventBus } from '../communications/eventBus';
 import { BlockMeta, XY, XYWH } from '../types';
 import { IBlock, IRenderable } from './interfaces';
 

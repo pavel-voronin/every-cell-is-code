@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { EventBus } from '../app/eventBus';
+import { EventBus } from '../app/communications/eventBus';
 
 describe('EventBus', () => {
   it('calls handler when event is emitted', () => {

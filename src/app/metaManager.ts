@@ -1,6 +1,6 @@
 import { CHUNK_SIZE } from './constants';
 import { BlockMeta, Chunk, RawBlockMeta, XY } from './types';
-import { eventBus } from './eventBus';
+import { eventBus } from './communications/eventBus';
 import { TupleMap } from './structures/tuppleMap';
 import knownChunks from './knownChunks';
 import { blockMetaConverters } from './blockMetaFactory';

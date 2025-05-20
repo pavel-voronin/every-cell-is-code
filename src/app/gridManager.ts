@@ -12,7 +12,7 @@ import {
   VISIBLE_AREA_MARGIN,
 } from './constants';
 import { XY, XYWH } from './types';
-import { eventBus } from './eventBus';
+import { eventBus } from './communications/eventBus';
 
 export class GridManager {
   protected scale = INITIAL_SCALE;
