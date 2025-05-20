@@ -1,4 +1,14 @@
 export type XY = [number, number];
+
+export function isXY(value: unknown): value is XY {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    typeof value[0] === 'number' &&
+    typeof value[1] === 'number'
+  );
+}
+
 export type XYWH = [number, number, number, number];
 
 export type BlockEvents = {
@@ -34,9 +44,4 @@ export type BlockMeta = {
   events: BlockEvents;
   src?: string;
   image_url?: string;
-};
-
-export type WorkerMessage<T extends object = Record<string, unknown>> = {
-  type: string;
-  payload?: T; // idea: pick serializable type
 };

@@ -1,5 +1,6 @@
 // System template
 
+let origin;
 let width;
 let height;
 let isActive = true;
@@ -50,7 +51,7 @@ self.onmessage = function (e) {
       break;
 
     case 'message':
-      handleMessage(data.payload);
+      handleMessage(data);
       break;
 
     default:
@@ -59,6 +60,7 @@ self.onmessage = function (e) {
 };
 
 function handleInit(data) {
+  origin = data.origin;
   width = data.width ?? 100;
   height = data.height ?? 100;
   targetFPS = data.targetFPS ?? 0;
