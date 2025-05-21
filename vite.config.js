@@ -22,26 +22,6 @@ export default defineConfig({
       },
     },
     {
-      name: 'inject-preload-chunks',
-      enforce: 'post',
-      async transform(code, id) {
-        if (!id.endsWith('/app.ts')) return;
-
-        if (!preloadChunks || !preloadChunks.length) return;
-
-        const chunkCalls = preloadChunks
-          .map((coords) => {
-            const chunkPath = `./src/public/meta/chunk_${coords[0]}_${coords[1]}.json`;
-            const blocks = JSON.parse(fs.readFileSync(chunkPath, 'utf-8'));
-            return `this.metaManager.loadChunkData([${coords.join(',')}], ${JSON.stringify(blocks, null, 2)});`;
-          })
-          .filter(Boolean)
-          .join('\n');
-
-        return code.replace(`"__PRELOAD_CHUNKS__";`, chunkCalls);
-      },
-    },
-    {
       name: 'generate-known-chunks',
       buildStart() {
         const metaDir = './src/public/meta';
@@ -69,27 +49,33 @@ export default defineConfig({
           const blockPath = `${blocksDir}/${file}`;
           let block = JSON.parse(fs.readFileSync(blockPath, 'utf-8'));
 
-          if (block.type !== 'templated_worker') continue;
+          if (
+            block.backend.type !== 'worker' ||
+            block.backend.resource === undefined ||
+            block.backend.resource.type !== 'worker' ||
+            block.backend.resource.file === undefined ||
+            block.backend.resource.template === undefined ||
+            block.backend.resource.url === undefined
+          )
+            continue;
 
-          if (block.worker_dist_file === undefined) {
-            block.worker_dist_file = `./block_${match[1]}_${match[2]}.dist.js`;
+          const worker_dist_file = block.backend.resource.url.replace(
+            /^\.\/blocks\//,
+            './',
+          );
+
+          const templateFile = `${blocksDir}/templates/${block.backend.resource.template}.js`;
+          const workerFile = `${blocksDir}/${block.backend.resource.file}`;
+          const distPath = `${blocksDir}/${worker_dist_file}`;
+
+          if (fs.existsSync(templateFile) && fs.existsSync(workerFile)) {
+            const template = fs.readFileSync(templateFile, 'utf-8');
+            const worker = fs.readFileSync(workerFile, 'utf-8');
+            fs.writeFileSync(distPath, `${template}\n${worker}`);
           }
 
-          if (block.template_file && block.worker_file) {
-            const templateFile = `${blocksDir}/${block.template_file}`;
-            const workerFile = `${blocksDir}/${block.worker_file}`;
-            const distPath = `${blocksDir}/${block.worker_dist_file}`;
-
-            if (fs.existsSync(templateFile) && fs.existsSync(workerFile)) {
-              const template = fs.readFileSync(templateFile, 'utf-8');
-              const worker = fs.readFileSync(workerFile, 'utf-8');
-              fs.writeFileSync(distPath, `${template}\n${worker}`);
-            }
-          }
-
-          let events = {};
-          if (block.worker_file) {
-            const workerFile = `${blocksDir}/${block.worker_file}`;
+          if (block.backend.resource.file) {
+            const workerFile = `${blocksDir}/${block.backend.resource.file}`;
             const worker = fs.readFileSync(workerFile, 'utf-8');
             const eventMap = {
               onPointerDown: 'pointerdown',
@@ -100,26 +86,17 @@ export default defineConfig({
               onWheel: 'wheel',
             };
 
-            Object.keys(eventMap)
+            const events = Object.keys(eventMap)
               .filter((event) => worker.includes(`function ${event}`))
-              .forEach((event) => {
-                events[eventMap[event]] = true;
-              });
-          }
+              .reduce((acc, event) => {
+                acc[eventMap[event]] = true;
+                return acc;
+              }, {});
 
-          // Write work file with only events and worker_dist_file
-          const workFilePath = `${blocksDir}/${file.replace(/\.json$/, '.work.json')}`;
-          fs.writeFileSync(
-            workFilePath,
-            JSON.stringify(
-              {
-                events,
-                worker_dist_file: block.worker_dist_file,
-              },
-              null,
-              2,
-            ),
-          );
+            block.input.events = events;
+
+            fs.writeFileSync(blockPath, JSON.stringify(block, null, 2));
+          }
         }
       },
     },
@@ -144,65 +121,15 @@ export default defineConfig({
           const match = file.match(blockRe);
           if (!match) continue;
           const blockPath = path.join(blocksDir, file);
-          let block = JSON.parse(fs.readFileSync(blockPath, 'utf-8'));
+          const block = JSON.parse(fs.readFileSync(blockPath, 'utf-8'));
 
-          // Try to read work file for events and worker_dist_file
-          const workFilePath = blockPath.replace(/\.json$/, '.work.json');
-          let workData = null;
-          if (fs.existsSync(workFilePath)) {
-            workData = JSON.parse(fs.readFileSync(workFilePath, 'utf-8'));
-          }
-
-          // Extract coordinates and dimensions
-          const x = block.x ?? parseInt(match[1], 10);
-          const y = block.y ?? parseInt(match[2], 10);
-          const w = block.w ?? 1;
-          const h = block.h ?? 1;
-
-          // Read source code from dist file (from work file if present)
-          let src = '';
-          let workerDistFile =
-            workData?.worker_dist_file || block.worker_dist_file;
-          if (workerDistFile) {
-            const distPath = path.join(
-              blocksDir,
-              workerDistFile.replace(/^\.\//, ''),
-            );
-            if (fs.existsSync(distPath)) {
-              src = fs.readFileSync(distPath, 'utf-8');
-            }
-          }
-
-          let newBlock;
-          // Compose new block structure
-          if (block.type === 'templated_worker') {
-            newBlock = {
-              type: block.type,
-              x,
-              y,
-              w,
-              h,
-              events: workData?.events || block.events || {},
-              src,
-            };
-          } else if (block.type === 'image') {
-            newBlock = {
-              type: block.type,
-              x,
-              y,
-              w,
-              h,
-              events: workData?.events || block.events || {},
-              image_url: block.image_url,
-            };
-          }
-
-          // Determine chunk coordinates
-          const chunkX = Math.floor(x / CHUNK_SIZE);
-          const chunkY = Math.floor(y / CHUNK_SIZE);
+          const chunkX = Math.floor(block.x / CHUNK_SIZE);
+          const chunkY = Math.floor(block.y / CHUNK_SIZE);
           const chunkKey = `${chunkX}_${chunkY}`;
+
           if (!chunks.has(chunkKey)) chunks.set(chunkKey, []);
-          chunks.get(chunkKey).push(newBlock);
+
+          chunks.get(chunkKey).push(block);
         }
 
         // 3. Write new chunk files
@@ -210,6 +137,26 @@ export default defineConfig({
           const chunkPath = path.join(metaDir, `chunk_${chunkKey}.json`);
           fs.writeFileSync(chunkPath, JSON.stringify(blocks, null, 2));
         }
+      },
+    },
+    {
+      name: 'inject-preload-chunks',
+      enforce: 'post',
+      async transform(code, id) {
+        if (!id.endsWith('/app.ts')) return;
+
+        if (!preloadChunks || !preloadChunks.length) return;
+
+        const chunkCalls = preloadChunks
+          .map((coords) => {
+            const chunkPath = `./src/public/meta/chunk_${coords[0]}_${coords[1]}.json`;
+            const blocks = JSON.parse(fs.readFileSync(chunkPath, 'utf-8'));
+            return `this.metaManager.loadChunkData([${coords.join(',')}], ${JSON.stringify(blocks, null, 2)});`;
+          })
+          .filter(Boolean)
+          .join('\n');
+
+        return code.replace(`"__PRELOAD_CHUNKS__";`, chunkCalls);
       },
     },
     {

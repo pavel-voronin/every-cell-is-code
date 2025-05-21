@@ -1,9 +1,10 @@
 import { CHUNK_SIZE } from './constants';
-import { BlockMeta, Chunk, RawBlockMeta, XY } from './types';
+import { XY } from './types/base';
+import { BlockConfig } from './types/blocks';
+import { Chunk } from './types/blocks';
 import { eventBus } from './communications/eventBus';
 import { TupleMap } from './structures/tuppleMap';
 import knownChunks from './knownChunks';
-import { blockMetaConverters } from './blockMetaFactory';
 
 enum ChunkStatus {
   Loading = 'loading',
@@ -12,7 +13,7 @@ enum ChunkStatus {
 }
 
 export class MetaManager {
-  protected origins = new TupleMap<BlockMeta>();
+  protected origins = new TupleMap<BlockConfig>();
   protected index = new TupleMap<XY>();
   protected chunkStatuses = new TupleMap<ChunkStatus>();
   protected visibleAreaRequestId = 0;
@@ -37,37 +38,18 @@ export class MetaManager {
     );
   }
 
-  protected validateChunk(chunk: unknown): chunk is Chunk {
-    return (
-      Array.isArray(chunk) &&
-      chunk.every((meta) => this.validateRawBlockMeta(meta))
-    );
-  }
+  protected addBlockMeta(meta: unknown) {
+    // const converter = blockMetaConverters[meta.type];
+    // if (!converter) {
+    //   throw new Error(`Unknown block type: ${meta.type}`);
+    // }
+    // const config = converter(meta);
+    const config = meta as BlockConfig;
+    this.origins.set([config.x, config.y], config);
 
-  protected validateRawBlockMeta(meta: unknown): meta is RawBlockMeta {
-    return (
-      typeof (meta as RawBlockMeta) === 'object' &&
-      typeof (meta as RawBlockMeta).x === 'number' &&
-      typeof (meta as RawBlockMeta).y === 'number' &&
-      typeof (meta as RawBlockMeta).w === 'number' &&
-      typeof (meta as RawBlockMeta).h === 'number' &&
-      typeof (meta as RawBlockMeta).url === 'string' &&
-      ((meta as RawBlockMeta).events === undefined ||
-        typeof (meta as RawBlockMeta).events === 'object')
-    );
-  }
-
-  protected addBlockMeta(meta: RawBlockMeta) {
-    const converter = blockMetaConverters[meta.type];
-    if (!converter) {
-      throw new Error(`Unknown block type: ${meta.type}`);
-    }
-    const blockMeta = converter(meta);
-    this.origins.set([meta.x, meta.y], blockMeta);
-
-    for (let dx = 0; dx < meta.w; dx++) {
-      for (let dy = 0; dy < meta.h; dy++) {
-        this.index.set([meta.x + dx, meta.y + dy], [meta.x, meta.y]);
+    for (let dx = 0; dx < config.w; dx++) {
+      for (let dy = 0; dy < config.h; dy++) {
+        this.index.set([config.x + dx, config.y + dy], [config.x, config.y]);
       }
     }
   }
@@ -103,9 +85,9 @@ export class MetaManager {
         }
 
         const data: unknown = await res.json();
-        if (!this.validateChunk(data)) {
-          throw new Error(`Invalid chunk data: ${url}`);
-        }
+        // if (!this.validateChunk(data)) {
+        //   throw new Error(`Invalid chunk data: ${url}`);
+        // }
 
         this.loadChunkData([chunkX, chunkY], data as Chunk);
       })

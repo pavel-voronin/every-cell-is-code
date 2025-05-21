@@ -1,9 +1,21 @@
 {
-  "type": "templated_worker",
   "x": 3,
   "y": 2,
   "w": 1,
   "h": 1,
-  "template_file": "./templates/v1.js",
-  "worker_file": "./block_3_2.js"
+  "frontend": {
+    "type": "canvas"
+  },
+  "backend": {
+    "type": "worker",
+    "resource": {
+      "type": "worker",
+      "template": "v1",
+      "file": "./block_3_2.js",
+      "url": "./blocks/block_3_2.dist.js"
+    }
+  },
+  "input": {
+    "events": {}
+  }
 }

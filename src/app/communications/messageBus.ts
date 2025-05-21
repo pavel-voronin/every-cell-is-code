@@ -1,5 +1,5 @@
 import { TupleMap } from '../structures/tuppleMap';
-import { XY } from '../types';
+import { XY } from '../types/base';
 import { eventBus } from './eventBus';
 
 export type SubscribeParams = {
