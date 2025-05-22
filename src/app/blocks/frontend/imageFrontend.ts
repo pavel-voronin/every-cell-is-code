@@ -14,6 +14,15 @@ export class ImageFrontend implements FrontendComponent {
 
     this.element = document.createElement('img');
     this.element.src = resource.url;
+    if (config.scale) {
+      this.element.style.width = `${config.scale * 100}%`;
+    }
+    if (config.top) {
+      this.element.style.top = `${config.top * 100}%`;
+    }
+    if (config.left) {
+      this.element.style.left = `${config.left * 100}%`;
+    }
   }
 
   unload() {

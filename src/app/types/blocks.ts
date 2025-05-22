@@ -16,8 +16,6 @@ export type ImageFrontendConfig = {
   scale?: number;
   left?: number;
   top?: number;
-  hAlign?: 'left' | 'center' | 'right';
-  vAlign?: 'top' | 'middle' | 'bottom';
 };
 
 export type CanvasFrontendConfig = {
