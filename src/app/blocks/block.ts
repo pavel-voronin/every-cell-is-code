@@ -4,23 +4,27 @@ import {
   BackendComponent,
   ContainerComponent,
   FrontendComponent,
-  InputComponent,
+  EventsInputComponent,
+  MessagesInputComponent,
 } from '../types/blockComponents';
 import { Container } from './container';
 import { CanvasFrontend } from './frontend/canvasFrontend';
 import { ImageFrontend } from './frontend/imageFrontend';
-import { Input } from './input';
+import { EventsInput } from './input/eventsInput';
 import { WorkerBackend } from './backend/workerBackend';
+import { MessagesInput } from './input/messagesInput';
 
 export class Block {
   container: ContainerComponent;
-  input: InputComponent;
+  eventsInput: EventsInputComponent;
+  messagesInput: MessagesInputComponent;
   frontend?: FrontendComponent;
   backend?: BackendComponent;
 
   constructor(readonly config: BlockConfig) {
     this.container = new Container(this);
-    this.input = new Input(this);
+    this.eventsInput = new EventsInput(this);
+    this.messagesInput = new MessagesInput(this);
     this.initFrontend();
     this.initBackend();
   }
@@ -48,7 +52,8 @@ export class Block {
   unload() {
     this.backend?.unload();
     this.frontend?.unload();
-    this.input.unload();
+    this.eventsInput.unload();
+    this.messagesInput.unload();
     this.container.unload();
   }
 

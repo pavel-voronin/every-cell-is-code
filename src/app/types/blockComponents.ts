@@ -9,9 +9,12 @@ export interface FrontendComponent extends BlockComponent {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BackendComponent extends BlockComponent {}
 
-export interface InputComponent extends BlockComponent {
+export interface EventsInputComponent extends BlockComponent {
   reEmitEvent(eventId: number): void;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface MessagesInputComponent extends BlockComponent {}
 
 export interface ContainerComponent extends BlockComponent {
   container: HTMLDivElement;

@@ -1,11 +1,10 @@
-import { eventBus } from '../communications/eventBus';
-import { EVENT_RETENTION_TIMEOUT } from '../constants';
-import { XY } from '../types/base';
-import { InputComponent } from '../types/blockComponents';
-import { WorkerBackend } from './backend/workerBackend';
-import { Block } from './block';
+import { eventBus } from '../../communications/eventBus';
+import { EVENT_RETENTION_TIMEOUT } from '../../constants';
+import { EventsInputComponent } from '../../types/blockComponents';
+import { WorkerBackend } from '../backend/workerBackend';
+import { Block } from '../block';
 
-export class Input implements InputComponent {
+export class EventsInput implements EventsInputComponent {
   protected unloadHandlers: (() => void)[] = [];
 
   protected counter: number = 0;
@@ -17,19 +16,7 @@ export class Input implements InputComponent {
   constructor(readonly block: Block) {
     this.initializeCanvasEventListener();
     this.cleanupOldEvents();
-    eventBus.on(
-      `block:${this.block.x},${this.block.y}:message`,
-      this.receiveMessage,
-    );
   }
-
-  receiveMessage = (from: XY, payload: unknown) => {
-    (this.block.backend as WorkerBackend).worker.postMessage({
-      type: 'message',
-      from,
-      payload,
-    });
-  };
 
   // Periodically clean up old remembered events
   protected cleanupOldEvents() {
@@ -242,10 +229,5 @@ export class Input implements InputComponent {
     this.unloadHandlers.forEach((handler) => handler());
 
     this.rememberedEvents.clear();
-    // messageBus.unsubscribe(this.block.xy);
-    eventBus.off(
-      `block:${this.block.x},${this.block.y}:message`,
-      this.receiveMessage,
-    );
   }
 }

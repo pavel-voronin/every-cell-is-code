@@ -92,7 +92,7 @@ export class WorkerBackend implements BackendComponent {
             e.data.payload.eventId !== undefined &&
             typeof e.data.payload.eventId === 'number'
           ) {
-            this.block.input.reEmitEvent(e.data.payload.eventId);
+            this.block.eventsInput.reEmitEvent(e.data.payload.eventId);
           }
           break;
       }
