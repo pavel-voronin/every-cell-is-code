@@ -44,4 +44,36 @@ describe('EventBus', () => {
     bus.emit('never-added', 123);
     expect(handler).not.toHaveBeenCalled();
   });
+
+  it('on returns an object with an off method that removes the handler', () => {
+    const bus = new EventBus();
+    const handler = vi.fn();
+    const subscription = bus.on('event', handler);
+    bus.emit('event', 1);
+    expect(handler).toHaveBeenCalledWith(1);
+
+    handler.mockClear();
+    subscription.off();
+    bus.emit('event', 2);
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('on allows multiple handlers for the same event', () => {
+    const bus = new EventBus();
+    const handler1 = vi.fn();
+    const handler2 = vi.fn();
+    bus.on('multi', handler1);
+    bus.on('multi', handler2);
+    bus.emit('multi', 'x');
+    expect(handler1).toHaveBeenCalledWith('x');
+    expect(handler2).toHaveBeenCalledWith('x');
+  });
+
+  it('on adds handler to listeners and handler is called with correct arguments', () => {
+    const bus = new EventBus();
+    const handler = vi.fn();
+    bus.on('args', handler);
+    bus.emit('args', 1, 2, 3);
+    expect(handler).toHaveBeenCalledWith(1, 2, 3);
+  });
 });

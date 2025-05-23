@@ -37,7 +37,7 @@ export class SignalBus {
         if (params.to && sub.to) {
           const subCoord = sub.to;
           const msgCoord = params.to;
-          const subRadius = sub.radius ?? 0;
+          const subRadius = sub.radius!;
           const msgRadius = params.radius ?? 0;
           const dist =
             Math.abs(subCoord[0] - msgCoord[0]) +

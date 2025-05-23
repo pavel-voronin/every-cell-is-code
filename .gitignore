@@ -3,3 +3,4 @@ dist
 src/public/blocks/*.dist.js
 src/public/blocks/*.work.json
 src/public/meta
+coverage
