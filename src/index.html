@@ -49,6 +49,9 @@
         position: absolute;
         z-index: 0;
       }
+      #navBlock {
+        user-select: none;
+      }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -59,77 +62,6 @@
   </head>
   <body>
     <canvas id="gridCanvas"></canvas>
-    <div
-      id="infoBlock"
-      class="font-inter fixed right-8 bottom-8 z-10 max-w-xs"
-      data-state="expanded"
-    >
-      <div
-        id="infoBlockContent"
-        class="bg-gray-800 rounded-xl p-4 text-gray-200 flex flex-col gap-4 hidden"
-      >
-        <div class="flex items-center justify-between">
-          <div class="font-bold text-lg tracking-tight text-sky-300">
-            Every Cell is Code
-          </div>
-          <button
-            id="collapseInfoBlock"
-            class="ml-2 p-1 rounded hover:bg-gray-700 active:bg-gray-600 transition-colors text-sky-300 focus:outline-none w-8 h-8 min-w-8 min-h-8"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <polyline
-                points="6,9 12,15 18,9"
-                fill="none"
-                stroke="#38bdf8"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
-        </div>
-        <div class="mb-1">
-          <div class="text-gray-300 text-xs leading-relaxed mb-2">
-            Move around the field using mouse or touch. Try interacting with a
-            block: use mouse, tap, or sometimes keyboard (make sure your cursor
-            is over the block).
-          </div>
-          <div
-            class="flex justify-between items-center text-gray-500 text-xs pt-3 mt-2"
-          >
-            <span>v%APP_VERSION%</span>
-            <div class="flex gap-3 flex-wrap text-sm">
-              <a
-                href="https://github.com/pavel-voronin/every-cell-is-code"
-                class="underline text-sky-300 hover:text-sky-400 transition-colors"
-                >GitHub</a
-              >
-              <a
-                href="https://discord.gg/fSMwfn8sKw"
-                class="underline text-sky-300 hover:text-sky-400 transition-colors"
-                >Discord</a
-              >
-            </div>
-          </div>
-        </div>
-      </div>
-      <button
-        id="expandInfoBlock"
-        class="flex flex-row items-center gap-2 bg-gray-800/80 rounded-full shadow-lg hover:bg-gray-700 active:bg-gray-600 transition-colors px-4 py-2 fixed right-8 bottom-8 z-20 min-w-0 h-10 hidden"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <polyline
-            points="6,15 12,9 18,15"
-            fill="none"
-            stroke="#38bdf8"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <span class="text-sky-200 font-medium text-sm select-none">Stuff</span>
-      </button>
-    </div>
     <div
       id="navBlock"
       class="font-inter fixed left-8 bottom-8 z-10 bg-gray-800/90 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-2 shadow-lg min-w-[120px] max-w-xs"
@@ -162,13 +94,11 @@
     </div>
     <script type="module">
       import { App } from "./app/app.ts";
-      import { setupInfoBlockLogic } from "./app/ui/infoBlock.ts";
       import { setupNavBlockLogic } from "./app/ui/navBlock.ts";
 
       const canvas = document.getElementById("gridCanvas");
       const app = new App(canvas);
 
-      setupInfoBlockLogic();
       setupNavBlockLogic((x, y) => {
         app.gridManager.moveTo([x, y]);
       });
