@@ -1,19 +1,23 @@
 import { eventBus } from '../../communications/eventBus';
 import messageBus from '../../communications/messageBus';
 import { XY } from '../../types/base';
-import { BackendComponent } from '../../types/blockComponents';
+import { IBackendComponent } from '../../types/blockComponents';
 import { WorkerBackendConfig } from '../../types/blocks';
 import { Block } from '../block';
+import { BaseComponent } from '../baseComponent';
 import { CanvasFrontend } from '../frontend/canvasFrontend';
+import { resourceLoader } from '../resources/resourceLoader';
 
-export class WorkerBackend implements BackendComponent {
+export class WorkerBackend extends BaseComponent implements IBackendComponent {
   worker: Worker;
 
-  constructor(
-    readonly block: Block,
-    readonly config: WorkerBackendConfig,
-  ) {
-    this.worker = new Worker(this.config.resource.url);
+  constructor(readonly block: Block) {
+    super(block);
+
+    const config = this.block.config.backend as WorkerBackendConfig;
+    const resource = resourceLoader(config.resource);
+
+    this.worker = new Worker(resource.url);
 
     this.initializeWorkerEventListeners();
 
@@ -24,6 +28,8 @@ export class WorkerBackend implements BackendComponent {
       targetFPS: 60,
       origin: this.block.xy,
     });
+
+    this.onUnload(() => this.worker.terminate());
   }
 
   protected initializeWorkerEventListeners() {
@@ -105,9 +111,5 @@ export class WorkerBackend implements BackendComponent {
     this.worker.addEventListener('messageerror', (e: MessageEvent) => {
       eventBus.emit('block:worker-messageerror', this.block.xy, e);
     });
-  }
-
-  unload(): void {
-    this.worker.terminate();
   }
 }

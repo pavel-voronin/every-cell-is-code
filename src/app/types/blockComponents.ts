@@ -1,25 +1,25 @@
-export interface BlockComponent {
+export interface IBlockComponent {
   unload(): void;
 }
 
-export interface FrontendComponent extends BlockComponent {
+export interface IFrontendComponent extends IBlockComponent {
   element: HTMLElement;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface BackendComponent extends BlockComponent {}
+export interface IBackendComponent extends IBlockComponent {}
 
-export interface EventsInputComponent extends BlockComponent {
+export interface IEventsInputComponent extends IBlockComponent {
   reEmitEvent(eventId: number): void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface MessagesInputComponent extends BlockComponent {}
+export interface IMessagesInputComponent extends IBlockComponent {}
 
-export interface ContainerComponent extends BlockComponent {
+export interface IContainerComponent extends IBlockComponent {
   container: HTMLDivElement;
   scale: number;
-  appendFrontend(frontend: FrontendComponent): void;
+  appendFrontend(frontend: IFrontendComponent): void;
   get w(): number;
   get h(): number;
 }

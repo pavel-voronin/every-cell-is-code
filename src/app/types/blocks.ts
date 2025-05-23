@@ -1,9 +1,9 @@
-export type ImageResource = {
+export type ImageResourceSchema = {
   type: 'image';
   url: string;
 };
 
-export type WorkerResource = {
+export type WorkerResourceSchema = {
   type: 'worker';
   file: string;
   url: string;
@@ -12,7 +12,7 @@ export type WorkerResource = {
 
 export type ImageFrontendConfig = {
   type: 'image';
-  resource: ImageResource;
+  resource: ImageResourceSchema;
   scale?: number;
   left?: number;
   top?: number;
@@ -27,7 +27,10 @@ type FrontendConfig =
   | ImageFrontendConfig
   | CanvasFrontendConfig;
 
-export type WorkerBackendConfig = { type: 'worker'; resource: WorkerResource };
+export type WorkerBackendConfig = {
+  type: 'worker';
+  resource: WorkerResourceSchema;
+};
 
 type BackendConfig = { type: 'none' } | WorkerBackendConfig;
 

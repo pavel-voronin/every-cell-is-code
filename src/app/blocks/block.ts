@@ -1,11 +1,11 @@
 import { XY } from '../types/base';
 import { BlockConfig } from '../types/blocks';
 import {
-  BackendComponent,
-  ContainerComponent,
-  FrontendComponent,
-  EventsInputComponent,
-  MessagesInputComponent,
+  IBackendComponent,
+  IContainerComponent,
+  IFrontendComponent,
+  IEventsInputComponent,
+  IMessagesInputComponent,
 } from '../types/blockComponents';
 import { Container } from './container';
 import { CanvasFrontend } from './frontend/canvasFrontend';
@@ -15,11 +15,11 @@ import { WorkerBackend } from './backend/workerBackend';
 import { MessagesInput } from './input/messagesInput';
 
 export class Block {
-  container: ContainerComponent;
-  eventsInput: EventsInputComponent;
-  messagesInput: MessagesInputComponent;
-  frontend?: FrontendComponent;
-  backend?: BackendComponent;
+  container: IContainerComponent;
+  eventsInput: IEventsInputComponent;
+  messagesInput: IMessagesInputComponent;
+  frontend?: IFrontendComponent;
+  backend?: IBackendComponent;
 
   constructor(readonly config: BlockConfig) {
     this.container = new Container(this);
@@ -31,10 +31,10 @@ export class Block {
 
   protected initFrontend() {
     if (this.config.frontend.type === 'image') {
-      this.frontend = new ImageFrontend(this, this.config.frontend);
+      this.frontend = new ImageFrontend(this);
       this.container.appendFrontend(this.frontend);
     } else if (this.config.frontend.type === 'canvas') {
-      this.frontend = new CanvasFrontend(this, this.config.frontend);
+      this.frontend = new CanvasFrontend(this);
       this.container.appendFrontend(this.frontend);
     } else if (this.config.frontend.type === 'none') {
       // No frontend

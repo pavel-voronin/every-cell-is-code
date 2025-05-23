@@ -2,22 +2,26 @@ import { eventBus } from '../communications/eventBus';
 import { CELL_SIZE } from '../constants';
 import { XY } from '../types/base';
 import {
-  ContainerComponent,
-  FrontendComponent,
+  IContainerComponent,
+  IFrontendComponent,
 } from '../types/blockComponents';
 import { Block } from './block';
+import { BaseComponent } from './baseComponent';
 
-export class Container implements ContainerComponent {
+export class Container extends BaseComponent implements IContainerComponent {
   container: HTMLDivElement;
   scale: number = 1;
 
-  constructor(protected block: Block) {
+  constructor(readonly block: Block) {
+    super(block);
+
     this.container = document.createElement('div');
     this.container.classList.add('container');
-
     document.body.appendChild(this.container);
+    this.onUnload(() => this.container.remove());
 
     eventBus.sync('camera:moved', this.cameraMovedHandler);
+    this.onUnload(() => eventBus.off('camera:moved', this.cameraMovedHandler));
   }
 
   protected cameraMovedHandler = ([x, y]: XY, scale: number) => {
@@ -33,13 +37,8 @@ export class Container implements ContainerComponent {
     this.container.style.height = `${screenHeight}px`;
   };
 
-  appendFrontend(frontend: FrontendComponent) {
+  appendFrontend(frontend: IFrontendComponent) {
     this.container.appendChild(frontend.element);
-  }
-
-  unload() {
-    eventBus.off('camera:moved', this.cameraMovedHandler);
-    this.container.remove();
   }
 
   get w(): number {

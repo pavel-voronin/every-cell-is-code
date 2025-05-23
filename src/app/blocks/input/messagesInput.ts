@@ -1,15 +1,21 @@
 import { eventBus } from '../../communications/eventBus';
 import messageBus from '../../communications/messageBus';
 import { XY } from '../../types/base';
-import { MessagesInputComponent } from '../../types/blockComponents';
+import { IMessagesInputComponent } from '../../types/blockComponents';
 import { WorkerBackend } from '../backend/workerBackend';
 import { Block } from '../block';
+import { BaseComponent } from '../baseComponent';
 
-export class MessagesInput implements MessagesInputComponent {
+export class MessagesInput
+  extends BaseComponent
+  implements IMessagesInputComponent
+{
   protected unloadHandlers: (() => void)[] = [];
 
   constructor(readonly block: Block) {
+    super(block);
     this.subscribeToBlockMessages();
+    this.onUnload(() => messageBus.unsubscribe(this.block.xy));
   }
 
   protected subscribeToBlockMessages() {
@@ -30,14 +36,5 @@ export class MessagesInput implements MessagesInputComponent {
         receiveMessage,
       );
     });
-  }
-
-  protected onUnload(handler: () => void) {
-    this.unloadHandlers.push(handler);
-  }
-
-  unload() {
-    this.unloadHandlers.forEach((handler) => handler());
-    messageBus.unsubscribe(this.block.xy);
   }
 }

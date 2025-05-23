@@ -1,12 +1,14 @@
 import { eventBus } from '../../communications/eventBus';
 import { EVENT_RETENTION_TIMEOUT } from '../../constants';
-import { EventsInputComponent } from '../../types/blockComponents';
+import { IEventsInputComponent } from '../../types/blockComponents';
 import { WorkerBackend } from '../backend/workerBackend';
 import { Block } from '../block';
+import { BaseComponent } from '../baseComponent';
 
-export class EventsInput implements EventsInputComponent {
-  protected unloadHandlers: (() => void)[] = [];
-
+export class EventsInput
+  extends BaseComponent
+  implements IEventsInputComponent
+{
   protected counter: number = 0;
   protected rememberedEvents = new Map<
     number,
@@ -14,8 +16,10 @@ export class EventsInput implements EventsInputComponent {
   >();
 
   constructor(readonly block: Block) {
+    super(block);
     this.initializeCanvasEventListener();
     this.cleanupOldEvents();
+    this.onUnload(() => this.rememberedEvents.clear());
   }
 
   // Periodically clean up old remembered events
@@ -219,15 +223,5 @@ export class EventsInput implements EventsInputComponent {
         this.block.container.container.removeEventListener('keyup', keyUp);
       });
     }
-  }
-
-  protected onUnload(handler: () => void) {
-    this.unloadHandlers.push(handler);
-  }
-
-  unload() {
-    this.unloadHandlers.forEach((handler) => handler());
-
-    this.rememberedEvents.clear();
   }
 }

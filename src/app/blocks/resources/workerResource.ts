@@ -1,1 +1,3 @@
-export class WorkerResource {}
+export class WorkerResource {
+  constructor(public readonly url: string) {}
+}

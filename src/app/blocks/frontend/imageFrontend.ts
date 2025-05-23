@@ -1,16 +1,17 @@
 import { ImageFrontendConfig } from '../../types/blocks';
-import { FrontendComponent } from '../../types/blockComponents';
+import { IFrontendComponent } from '../../types/blockComponents';
 import { Block } from '../block';
 import { resourceLoader } from '../resources/resourceLoader';
+import { BaseComponent } from '../baseComponent';
 
-export class ImageFrontend implements FrontendComponent {
+export class ImageFrontend extends BaseComponent implements IFrontendComponent {
   element: HTMLImageElement;
 
-  constructor(
-    readonly block: Block,
-    readonly config: ImageFrontendConfig,
-  ) {
-    const resource = resourceLoader(this.config.resource);
+  constructor(readonly block: Block) {
+    super(block);
+
+    const config = this.block.config.frontend as ImageFrontendConfig;
+    const resource = resourceLoader(config.resource);
 
     this.element = document.createElement('img');
     this.element.src = resource.url;
@@ -23,9 +24,7 @@ export class ImageFrontend implements FrontendComponent {
     if (config.left) {
       this.element.style.left = `${config.left * 100}%`;
     }
-  }
 
-  unload() {
-    this.element.remove();
+    this.onUnload(() => this.element.remove());
   }
 }

@@ -1,15 +1,17 @@
-import { CanvasFrontendConfig } from '../../types/blocks';
-import { FrontendComponent } from '../../types/blockComponents';
+import { IFrontendComponent } from '../../types/blockComponents';
 import { Block } from '../block';
+import { BaseComponent } from '../baseComponent';
 
-export class CanvasFrontend implements FrontendComponent {
+export class CanvasFrontend
+  extends BaseComponent
+  implements IFrontendComponent
+{
   element: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
-  constructor(
-    readonly block: Block,
-    readonly config: CanvasFrontendConfig,
-  ) {
+  constructor(readonly block: Block) {
+    super(block);
+
     this.element = document.createElement('canvas');
 
     this.element.width = this.block.container.w;
@@ -17,9 +19,7 @@ export class CanvasFrontend implements FrontendComponent {
     this.element.tabIndex = -1;
 
     this.ctx = this.element.getContext('2d')!;
-  }
 
-  unload() {
-    this.element.remove();
+    this.onUnload(() => this.element.remove());
   }
 }
