@@ -8,7 +8,7 @@ export type SubscribeParams = {
   radius?: number;
 };
 
-export class MessageBus {
+export class SignalBus {
   subscribers = new TupleMap<SubscribeParams[]>();
 
   subscribe(subscriber: XY, params: SubscribeParams) {
@@ -49,7 +49,7 @@ export class MessageBus {
 
         if (match) {
           eventBus.emit(
-            `block:${subscriber[0]},${subscriber[1]}:message`,
+            `block:${subscriber[0]},${subscriber[1]}:signal`,
             from,
             payload,
           );
@@ -59,4 +59,4 @@ export class MessageBus {
   }
 }
 
-export default new MessageBus();
+export const signalBus = new SignalBus();

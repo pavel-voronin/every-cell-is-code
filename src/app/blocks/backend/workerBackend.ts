@@ -1,5 +1,5 @@
 import { eventBus } from '../../communications/eventBus';
-import messageBus from '../../communications/messageBus';
+import { signalBus } from '../../communications/signalBus';
 import { XY } from '../../types/base';
 import { IBackendComponent } from '../../types/blockComponents';
 import { WorkerBackendConfig } from '../../types/blocks';
@@ -57,12 +57,12 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
           }>['data'];
 
           if (!to && !topic) {
-            messageBus.subscribe(this.block.xy, {
+            signalBus.subscribe(this.block.xy, {
               to: this.block.xy,
               radius: radius ?? 0,
             });
           } else {
-            messageBus.subscribe(this.block.xy, {
+            signalBus.subscribe(this.block.xy, {
               to,
               topic,
               radius: radius ?? 0,
@@ -70,7 +70,7 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
           }
           break;
         }
-        case 'message': {
+        case 'signal': {
           const { to, topic, radius, payload } = e.data as MessageEvent<{
             to?: XY;
             topic?: string;
@@ -79,10 +79,10 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
           }>['data'];
 
           if (!to && !topic) {
-            throw new Error('No target or topic specified for message event');
+            throw new Error('No target or topic specified for signal event');
           }
 
-          messageBus.send(
+          signalBus.send(
             this.block.xy,
             {
               to,

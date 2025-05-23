@@ -5,26 +5,26 @@ import {
   IContainerComponent,
   IFrontendComponent,
   IEventsInputComponent,
-  IMessagesInputComponent,
+  ISignalsInputComponent,
 } from '../types/blockComponents';
 import { Container } from './container';
 import { CanvasFrontend } from './frontend/canvasFrontend';
 import { ImageFrontend } from './frontend/imageFrontend';
 import { EventsInput } from './input/eventsInput';
 import { WorkerBackend } from './backend/workerBackend';
-import { MessagesInput } from './input/messagesInput';
+import { SignalsInput } from './input/signalsInput';
 
 export class Block {
   container: IContainerComponent;
   eventsInput: IEventsInputComponent;
-  messagesInput: IMessagesInputComponent;
+  signalsInput: ISignalsInputComponent;
   frontend?: IFrontendComponent;
   backend?: IBackendComponent;
 
   constructor(readonly config: BlockConfig) {
     this.container = new Container(this);
     this.eventsInput = new EventsInput(this);
-    this.messagesInput = new MessagesInput(this);
+    this.signalsInput = new SignalsInput(this);
     this.initFrontend();
     this.initBackend();
   }
@@ -43,7 +43,7 @@ export class Block {
 
   protected initBackend() {
     if (this.config.backend.type === 'worker') {
-      this.backend = new WorkerBackend(this, this.config.backend);
+      this.backend = new WorkerBackend(this);
     } else if (this.config.backend.type === 'none') {
       // No backend
     }
@@ -53,7 +53,7 @@ export class Block {
     this.backend?.unload();
     this.frontend?.unload();
     this.eventsInput.unload();
-    this.messagesInput.unload();
+    this.signalsInput.unload();
     this.container.unload();
   }
 

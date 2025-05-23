@@ -9,7 +9,7 @@ export class EventsInput
   extends BaseComponent
   implements IEventsInputComponent
 {
-  protected counter: number = 0;
+  protected eventIdCounter: number = 0;
   protected rememberedEvents = new Map<
     number,
     { type: string; event: Event; timestamp: number }
@@ -17,6 +17,7 @@ export class EventsInput
 
   constructor(readonly block: Block) {
     super(block);
+
     this.initializeCanvasEventListener();
     this.cleanupOldEvents();
     this.onUnload(() => this.rememberedEvents.clear());
@@ -38,8 +39,8 @@ export class EventsInput
     });
   }
 
-  nextEventId() {
-    return this.counter++;
+  get eventId() {
+    return this.eventIdCounter++;
   }
 
   protected rememberEvent(type: string, eventId: number, e: Event) {
@@ -57,6 +58,10 @@ export class EventsInput
       eventBus.emit(rememberedEvent.type, rememberedEvent);
       this.rememberedEvents.delete(eventId);
     }
+  }
+
+  get config() {
+    return this.block.config.input.events;
   }
 
   protected initializeCanvasEventListener() {
@@ -80,12 +85,12 @@ export class EventsInput
 
     let pointerDown: (e: PointerEvent) => void;
 
-    if (this.block.config.input.events.pointerdown) {
+    if (this.config.pointerdown) {
       pointerDown = (e: PointerEvent) => {
         const x = e.offsetX / this.block.container.scale;
         const y = e.offsetY / this.block.container.scale;
         const pointerId = e.pointerId;
-        const eventId = this.nextEventId();
+        const eventId = this.eventId;
         this.rememberEvent('pointerdown', eventId, e);
         (this.block.backend as WorkerBackend).worker.postMessage({
           type: 'pointerdown',
@@ -108,14 +113,14 @@ export class EventsInput
     // wheel
 
     let wheel: (e: WheelEvent) => void;
-    if (this.block.config.input.events.wheel) {
+    if (this.config.wheel) {
       wheel = (e: WheelEvent) => {
         e.preventDefault();
         const x = e.offsetX / this.block.container.scale;
         const y = e.offsetY / this.block.container.scale;
         const deltaX = e.deltaX;
         const deltaY = e.deltaY;
-        const eventId = this.nextEventId();
+        const eventId = this.eventId;
         this.rememberEvent('wheel', eventId, e);
         (this.block.backend as WorkerBackend).worker.postMessage({
           type: 'wheel',
@@ -135,12 +140,12 @@ export class EventsInput
     // pointerup
 
     let pointerUp: (e: PointerEvent) => void;
-    if (this.block.config.input.events.pointerup) {
+    if (this.config.pointerup) {
       pointerUp = (e: PointerEvent) => {
         const x = e.offsetX / this.block.container.scale;
         const y = e.offsetY / this.block.container.scale;
         const pointerId = e.pointerId;
-        const eventId = this.nextEventId();
+        const eventId = this.eventId;
         this.rememberEvent('pointerup', eventId, e);
         (this.block.backend as WorkerBackend).worker.postMessage({
           type: 'pointerup',
@@ -163,12 +168,12 @@ export class EventsInput
     // pointermove
 
     let pointerMove: (e: PointerEvent) => void;
-    if (this.block.config.input.events.pointermove) {
+    if (this.config.pointermove) {
       pointerMove = (e: PointerEvent) => {
         const x = e.offsetX / this.block.container.scale;
         const y = e.offsetY / this.block.container.scale;
         const pointerId = e.pointerId;
-        const eventId = this.nextEventId();
+        const eventId = this.eventId;
         this.rememberEvent('pointermove', eventId, e);
         (this.block.backend as WorkerBackend).worker.postMessage({
           type: 'pointermove',
@@ -190,10 +195,10 @@ export class EventsInput
 
     // keydown
 
-    if (this.block.config.input.events.keydown) {
+    if (this.config.keydown) {
       const keyDown = (e: KeyboardEvent) => {
         const code = e.code;
-        const eventId = this.nextEventId();
+        const eventId = this.eventId;
         this.rememberEvent('keydown', eventId, e);
         (this.block.backend as WorkerBackend).worker.postMessage({
           type: 'keydown',
@@ -208,10 +213,10 @@ export class EventsInput
 
     // keyup
 
-    if (this.block.config.input.events.keyup) {
+    if (this.config.keyup) {
       const keyUp = (e: KeyboardEvent) => {
         const code = e.code;
-        const eventId = this.nextEventId();
+        const eventId = this.eventId;
         this.rememberEvent('keyup', eventId, e);
         (this.block.backend as WorkerBackend).worker.postMessage({
           type: 'keyup',

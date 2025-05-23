@@ -50,8 +50,8 @@ self.onmessage = function (e) {
       handleKeyDownEvent(data.event);
       break;
 
-    case 'message':
-      handleMessage(data);
+    case 'signal':
+      handleSignal(data);
       break;
 
     default:
@@ -164,11 +164,11 @@ function handleKeyDownEvent(payload) {
   }
 }
 
-function handleMessage(payload) {
+function handleSignal(payload) {
   if (!isActive) return;
 
-  if (typeof self.onMessage === 'function') {
-    self.onMessage(payload);
+  if (typeof self.onSignal === 'function') {
+    self.onSignal(payload);
   }
 }
 
@@ -226,11 +226,13 @@ function terminate() {
   self.postMessage({ type: 'terminate' });
 }
 
-function sendMessage(coordinates, payload) {
+function sendSignal({ to, topic, radius, payload }) {
   self.postMessage({
-    type: 'message',
-    to: coordinates,
-    payload: payload,
+    type: 'signal',
+    to,
+    radius: radius ?? 0,
+    topic,
+    payload,
   });
 }
 

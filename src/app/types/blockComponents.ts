@@ -14,7 +14,7 @@ export interface IEventsInputComponent extends IBlockComponent {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface IMessagesInputComponent extends IBlockComponent {}
+export interface ISignalsInputComponent extends IBlockComponent {}
 
 export interface IContainerComponent extends IBlockComponent {
   container: HTMLDivElement;

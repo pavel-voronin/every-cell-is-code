@@ -2,6 +2,6 @@ function onInit() {
   self.postMessage({ type: 'subscribe' });
 }
 
-function onMessage(data) {
+function onSignal(data) {
   console.log(data);
 }
