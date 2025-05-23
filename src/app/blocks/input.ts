@@ -6,20 +6,13 @@ import { WorkerBackend } from './backend/workerBackend';
 import { Block } from './block';
 
 export class Input implements InputComponent {
+  protected unloadHandlers: (() => void)[] = [];
+
   protected counter: number = 0;
   protected rememberedEvents = new Map<
     number,
     { type: string; event: Event; timestamp: number }
   >();
-  protected cleanupOldEventsInterval?: ReturnType<typeof setInterval>;
-
-  protected pointerEnter?: () => void;
-  protected wheel?: (e: WheelEvent) => void;
-  protected pointerDown?: (e: PointerEvent) => void;
-  protected pointerUp?: (e: PointerEvent) => void;
-  protected pointerMove?: (e: PointerEvent) => void;
-  protected keyDown?: (e: KeyboardEvent) => void;
-  protected keyUp?: (e: KeyboardEvent) => void;
 
   constructor(readonly block: Block) {
     this.initializeCanvasEventListener();
@@ -40,7 +33,7 @@ export class Input implements InputComponent {
 
   // Periodically clean up old remembered events
   protected cleanupOldEvents() {
-    this.cleanupOldEventsInterval = setInterval(() => {
+    const cleanupOldEventsInterval = setInterval(() => {
       const now = Date.now();
       for (const [eventId, { timestamp }] of this.rememberedEvents.entries()) {
         if (now - timestamp > EVENT_RETENTION_TIMEOUT) {
@@ -48,6 +41,10 @@ export class Input implements InputComponent {
         }
       }
     }, EVENT_RETENTION_TIMEOUT);
+
+    this.onUnload(() => {
+      clearInterval(cleanupOldEventsInterval);
+    });
   }
 
   nextEventId() {
@@ -72,37 +69,28 @@ export class Input implements InputComponent {
   }
 
   protected initializeCanvasEventListener() {
-    this.pointerEnter = () => {
+    // pointerenter
+
+    const pointerEnter = () => {
       this.block.container.container.focus();
     };
     this.block.container.container.addEventListener(
       'pointerenter',
-      this.pointerEnter,
+      pointerEnter,
     );
+    this.onUnload(() => {
+      this.block.container.container.removeEventListener(
+        'pointerenter',
+        pointerEnter,
+      );
+    });
 
-    if (this.block.config.input.events.wheel) {
-      this.wheel = (e: WheelEvent) => {
-        e.preventDefault();
-        // const x = e.offsetX / this.block.container.scale;
-        // const y = e.offsetY / this.block.container.scale;
-        // const deltaX = e.deltaX;
-        // const deltaY = e.deltaY;
-        const eventId = this.nextEventId();
-        this.rememberEvent('wheel', eventId, e);
-        // this.postMessage({
-        //   type: 'wheel',
-        //   payload: { x, y, deltaX, deltaY, eventId },
-        // });
-      };
-    } else {
-      this.wheel = (e: WheelEvent) => {
-        eventBus.emit('wheel', new WheelEvent(e.type, e));
-      };
-    }
-    this.block.container.container.addEventListener('wheel', this.wheel);
+    // pointerdown
+
+    let pointerDown: (e: PointerEvent) => void;
 
     if (this.block.config.input.events.pointerdown) {
-      this.pointerDown = (e: PointerEvent) => {
+      pointerDown = (e: PointerEvent) => {
         const x = e.offsetX / this.block.container.scale;
         const y = e.offsetY / this.block.container.scale;
         const pointerId = e.pointerId;
@@ -114,130 +102,147 @@ export class Input implements InputComponent {
         });
       };
     } else {
-      this.pointerDown = (e: PointerEvent) => {
+      pointerDown = (e: PointerEvent) => {
         eventBus.emit('pointerdown', new PointerEvent(e.type, e));
       };
     }
-    this.block.container.container.addEventListener(
-      'pointerdown',
-      this.pointerDown,
-    );
+    this.block.container.container.addEventListener('pointerdown', pointerDown);
+    this.onUnload(() => {
+      this.block.container.container.removeEventListener(
+        'pointerdown',
+        pointerDown,
+      );
+    });
 
-    if (this.block.config.input.events.pointerup) {
-      this.pointerUp = (e: PointerEvent) => {
-        // const x = e.offsetX / this.block.container.scale;
-        // const y = e.offsetY / this.block.container.scale;
-        // const pointerId = e.pointerId;
+    // wheel
+
+    let wheel: (e: WheelEvent) => void;
+    if (this.block.config.input.events.wheel) {
+      wheel = (e: WheelEvent) => {
+        e.preventDefault();
+        const x = e.offsetX / this.block.container.scale;
+        const y = e.offsetY / this.block.container.scale;
+        const deltaX = e.deltaX;
+        const deltaY = e.deltaY;
         const eventId = this.nextEventId();
-        this.rememberEvent('pointerup', eventId, e);
-        // this.postMessage({
-        //   type: 'pointerup',
-        //   payload: { x, y, pointerId, eventId },
-        // });
+        this.rememberEvent('wheel', eventId, e);
+        (this.block.backend as WorkerBackend).worker.postMessage({
+          type: 'wheel',
+          payload: { x, y, deltaX, deltaY, eventId },
+        });
       };
     } else {
-      this.pointerUp = (e: PointerEvent) => {
+      wheel = (e: WheelEvent) => {
+        eventBus.emit('wheel', new WheelEvent(e.type, e));
+      };
+    }
+    this.block.container.container.addEventListener('wheel', wheel);
+    this.onUnload(() => {
+      this.block.container.container.removeEventListener('wheel', wheel);
+    });
+
+    // pointerup
+
+    let pointerUp: (e: PointerEvent) => void;
+    if (this.block.config.input.events.pointerup) {
+      pointerUp = (e: PointerEvent) => {
+        const x = e.offsetX / this.block.container.scale;
+        const y = e.offsetY / this.block.container.scale;
+        const pointerId = e.pointerId;
+        const eventId = this.nextEventId();
+        this.rememberEvent('pointerup', eventId, e);
+        (this.block.backend as WorkerBackend).worker.postMessage({
+          type: 'pointerup',
+          payload: { x, y, pointerId, eventId },
+        });
+      };
+    } else {
+      pointerUp = (e: PointerEvent) => {
         eventBus.emit('pointerup', new PointerEvent(e.type, e));
       };
     }
-    this.block.container.container.addEventListener(
-      'pointerup',
-      this.pointerUp,
-    );
+    this.block.container.container.addEventListener('pointerup', pointerUp);
+    this.onUnload(() => {
+      this.block.container.container.removeEventListener(
+        'pointerup',
+        pointerUp,
+      );
+    });
 
+    // pointermove
+
+    let pointerMove: (e: PointerEvent) => void;
     if (this.block.config.input.events.pointermove) {
-      this.pointerMove = (e: PointerEvent) => {
-        // const x = e.offsetX / this.block.container.scale;
-        // const y = e.offsetY / this.block.container.scale;
-        // const pointerId = e.pointerId;
+      pointerMove = (e: PointerEvent) => {
+        const x = e.offsetX / this.block.container.scale;
+        const y = e.offsetY / this.block.container.scale;
+        const pointerId = e.pointerId;
         const eventId = this.nextEventId();
         this.rememberEvent('pointermove', eventId, e);
-        // this.postMessage({
-        //   type: 'pointermove',
-        //   payload: { x, y, pointerId, eventId },
-        // });
+        (this.block.backend as WorkerBackend).worker.postMessage({
+          type: 'pointermove',
+          payload: { x, y, pointerId, eventId },
+        });
       };
     } else {
-      this.pointerMove = (e: PointerEvent) => {
+      pointerMove = (e: PointerEvent) => {
         eventBus.emit('pointermove', new PointerEvent(e.type, e));
       };
     }
-    this.block.container.container.addEventListener(
-      'pointermove',
-      this.pointerMove,
-    );
+    this.block.container.container.addEventListener('pointermove', pointerMove);
+    this.onUnload(() => {
+      this.block.container.container.removeEventListener(
+        'pointermove',
+        pointerMove,
+      );
+    });
+
+    // keydown
 
     if (this.block.config.input.events.keydown) {
-      this.keyDown = (e: KeyboardEvent) => {
-        // const code = e.code;
+      const keyDown = (e: KeyboardEvent) => {
+        const code = e.code;
         const eventId = this.nextEventId();
         this.rememberEvent('keydown', eventId, e);
-        // this.postMessage({
-        //   type: 'keydown',
-        //   payload: { code, eventId },
-        // });
+        (this.block.backend as WorkerBackend).worker.postMessage({
+          type: 'keydown',
+          payload: { code, eventId },
+        });
       };
-      this.block.container.container.addEventListener('keydown', this.keyDown);
+      this.block.container.container.addEventListener('keydown', keyDown);
+      this.onUnload(() => {
+        this.block.container.container.removeEventListener('keydown', keyDown);
+      });
     }
 
+    // keyup
+
     if (this.block.config.input.events.keyup) {
-      this.keyUp = (e: KeyboardEvent) => {
-        // const code = e.code;
+      const keyUp = (e: KeyboardEvent) => {
+        const code = e.code;
         const eventId = this.nextEventId();
         this.rememberEvent('keyup', eventId, e);
-        // this.postMessage({
-        //   type: 'keyup',
-        //   payload: { code, eventId },
-        // });
+        (this.block.backend as WorkerBackend).worker.postMessage({
+          type: 'keyup',
+          payload: { code, eventId },
+        });
       };
-      this.block.container.container.addEventListener('keyup', this.keyUp);
+      this.block.container.container.addEventListener('keyup', keyUp);
+      this.onUnload(() => {
+        this.block.container.container.removeEventListener('keyup', keyUp);
+      });
     }
   }
 
+  protected onUnload(handler: () => void) {
+    this.unloadHandlers.push(handler);
+  }
+
   unload() {
-    if (this.pointerEnter) {
-      this.block.container.container.removeEventListener(
-        'pointerenter',
-        this.pointerEnter,
-      );
-    }
-    if (this.wheel) {
-      this.block.container.container.removeEventListener('wheel', this.wheel);
-    }
-    if (this.pointerDown) {
-      this.block.container.container.removeEventListener(
-        'pointerdown',
-        this.pointerDown,
-      );
-    }
-    if (this.pointerUp) {
-      this.block.container.container.removeEventListener(
-        'pointerup',
-        this.pointerUp,
-      );
-    }
-    if (this.pointerMove) {
-      this.block.container.container.removeEventListener(
-        'pointermove',
-        this.pointerMove,
-      );
-    }
-    if (this.keyDown) {
-      this.block.container.container.removeEventListener(
-        'keydown',
-        this.keyDown,
-      );
-    }
-    if (this.keyUp) {
-      this.block.container.container.removeEventListener('keyup', this.keyUp);
-    }
+    this.unloadHandlers.forEach((handler) => handler());
 
     this.rememberedEvents.clear();
-    // messageBus.unsubscribe(this.xy);
-    if (this.cleanupOldEventsInterval) {
-      clearInterval(this.cleanupOldEventsInterval);
-    }
-    // eventBus.off('camera:moved', this.cameraMovedHandler);
+    // messageBus.unsubscribe(this.block.xy);
     eventBus.off(
       `block:${this.block.x},${this.block.y}:message`,
       this.receiveMessage,
