@@ -1,4 +1,4 @@
-function onPointerDown() {
+function onPointerDown({ eventId }) {
   self.postMessage({
     type: 'message',
     to: [origin[0] + 2, origin[1]],
@@ -8,6 +8,8 @@ function onPointerDown() {
       text: 'Hello from block 1.2',
     },
   });
+
+  return false;
 }
 
 function onUpdate(delta) {

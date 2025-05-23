@@ -13,8 +13,8 @@ export class Container implements ContainerComponent {
 
   constructor(protected block: Block) {
     this.container = document.createElement('div');
-    this.container.style.pointerEvents = 'none';
-    this.container.style.overflow = 'hidden';
+    this.container.classList.add('container');
+
     document.body.appendChild(this.container);
 
     eventBus.sync('camera:moved', this.cameraMovedHandler);

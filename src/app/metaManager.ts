@@ -39,11 +39,6 @@ export class MetaManager {
   }
 
   protected addBlockMeta(meta: unknown) {
-    // const converter = blockMetaConverters[meta.type];
-    // if (!converter) {
-    //   throw new Error(`Unknown block type: ${meta.type}`);
-    // }
-    // const config = converter(meta);
     const config = meta as BlockConfig;
     this.origins.set([config.x, config.y], config);
 
@@ -85,9 +80,8 @@ export class MetaManager {
         }
 
         const data: unknown = await res.json();
-        // if (!this.validateChunk(data)) {
-        //   throw new Error(`Invalid chunk data: ${url}`);
-        // }
+
+        // todo: validate
 
         this.loadChunkData([chunkX, chunkY], data as Chunk);
       })

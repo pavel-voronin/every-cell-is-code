@@ -1,3 +1,4 @@
+import { eventBus } from '../../communications/eventBus';
 import messageBus from '../../communications/messageBus';
 import { XY } from '../../types/base';
 import { BackendComponent } from '../../types/blockComponents';
@@ -12,13 +13,6 @@ export class WorkerBackend implements BackendComponent {
     readonly block: Block,
     readonly config: WorkerBackendConfig,
   ) {
-    // if (this.src) {
-    //   this.worker = new Worker(
-    //     URL.createObjectURL(
-    //       new Blob([this.src], { type: 'application/javascript' }),
-    //     ),
-    //   );
-    // } else
     this.worker = new Worker(this.config.resource.url);
 
     this.initializeWorkerEventListeners();
@@ -46,9 +40,9 @@ export class WorkerBackend implements BackendComponent {
             this.block.container.h,
           );
           break;
-        // case 'terminate':
-        //   eventBus.emit('block:terminate', this.xy);
-        //   break;
+        case 'terminate':
+          eventBus.emit('block:terminate', this.block.xy);
+          break;
         case 'subscribe': {
           const { to, topic, radius } = e.data as MessageEvent<{
             to?: XY;
@@ -93,38 +87,25 @@ export class WorkerBackend implements BackendComponent {
           );
           break;
         }
-        // case 're-emit':
-        //   if (
-        //     e.data.payload.eventId &&
-        //     typeof e.data.payload.eventId === 'number'
-        //   ) {
-        //     this.reEmitEvent(e.data.payload.eventId);
-        //   }
-        //   break;
+        case 're-emit':
+          if (
+            e.data.payload.eventId !== undefined &&
+            typeof e.data.payload.eventId === 'number'
+          ) {
+            this.block.input.reEmitEvent(e.data.payload.eventId);
+          }
+          break;
       }
     });
 
-    // this.worker.addEventListener('error', (e: ErrorEvent) => {
-    //   eventBus.emit('block:worker-error', this.xy, e);
-    // });
+    this.worker.addEventListener('error', (e: ErrorEvent) => {
+      eventBus.emit('block:worker-error', this.block.xy, e);
+    });
 
-    // this.worker.addEventListener('messageerror', (e: MessageEvent) => {
-    //   eventBus.emit('block:worker-messageerror', this.xy, e);
-    // });
+    this.worker.addEventListener('messageerror', (e: MessageEvent) => {
+      eventBus.emit('block:worker-messageerror', this.block.xy, e);
+    });
   }
-
-  // protected reEmitEvent(eventId: number) {
-  //   const rememberedEvent = this.rememberedEvents.get(eventId)?.event;
-
-  //   if (rememberedEvent) {
-  //     eventBus.emit(rememberedEvent.type, rememberedEvent);
-  //     this.rememberedEvents.delete(eventId);
-  //   }
-  // }
-
-  // postMessage(message: any, options?: StructuredSerializeOptions) {
-  //   this.worker.postMessage(message, options);
-  // }
 
   unload(): void {
     this.worker.terminate();

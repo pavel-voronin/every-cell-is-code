@@ -95,7 +95,7 @@ export default defineConfig({
 
             block.input.events = events;
 
-            fs.writeFileSync(blockPath, JSON.stringify(block, null, 2));
+            fs.writeFileSync(blockPath, JSON.stringify(block, null, 2) + '\n');
           }
         }
       },

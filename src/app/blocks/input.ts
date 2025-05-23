@@ -6,8 +6,8 @@ import { WorkerBackend } from './backend/workerBackend';
 import { Block } from './block';
 
 export class Input implements InputComponent {
-  counter: number = 0;
-  public rememberedEvents = new Map<
+  protected counter: number = 0;
+  protected rememberedEvents = new Map<
     number,
     { type: string; event: Event; timestamp: number }
   >();
@@ -60,6 +60,15 @@ export class Input implements InputComponent {
       event: e,
       timestamp: Date.now(),
     });
+  }
+
+  reEmitEvent(eventId: number) {
+    const rememberedEvent = this.rememberedEvents.get(eventId)?.event;
+
+    if (rememberedEvent) {
+      eventBus.emit(rememberedEvent.type, rememberedEvent);
+      this.rememberedEvents.delete(eventId);
+    }
   }
 
   protected initializeCanvasEventListener() {
