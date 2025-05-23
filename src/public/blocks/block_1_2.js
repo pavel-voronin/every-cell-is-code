@@ -1,4 +1,4 @@
-function onPointerDown({ eventId }) {
+function onPointerDown() {
   self.sendSignal({
     to: [origin[0] + 2, origin[1]],
     payload: {
