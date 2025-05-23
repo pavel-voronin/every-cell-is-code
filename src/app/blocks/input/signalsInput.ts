@@ -2,7 +2,6 @@ import { eventBus } from '../../communications/eventBus';
 import { signalBus } from '../../communications/signalBus';
 import { XY } from '../../types/base';
 import { ISignalsInputComponent } from '../../types/blockComponents';
-import { WorkerBackend } from '../backend/workerBackend';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
 
@@ -20,7 +19,7 @@ export class SignalsInput
 
   protected subscribeToBlockSignals() {
     const receiveSignal = (from: XY, payload: unknown) => {
-      (this.block.backend as WorkerBackend).worker.postMessage({
+      eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
         type: 'signal',
         from,
         payload,

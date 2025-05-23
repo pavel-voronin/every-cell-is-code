@@ -7,6 +7,10 @@ export class EventBus {
 
   on(event: string, handler: EventHandler) {
     (this.listeners[event] ||= []).push(handler);
+
+    return {
+      off: () => this.off(event, handler),
+    };
   }
 
   sync(event: string, handler: EventHandler) {

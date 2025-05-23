@@ -1,7 +1,6 @@
 import { eventBus } from '../../communications/eventBus';
 import { EVENT_RETENTION_TIMEOUT } from '../../constants';
 import { IEventsInputComponent } from '../../types/blockComponents';
-import { WorkerBackend } from '../backend/workerBackend';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
 
@@ -92,7 +91,7 @@ export class EventsInput
         const pointerId = e.pointerId;
         const eventId = this.eventId;
         this.rememberEvent('pointerdown', eventId, e);
-        (this.block.backend as WorkerBackend).worker.postMessage({
+        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
           type: 'pointerdown',
           payload: { x, y, pointerId, eventId },
         });
@@ -122,7 +121,7 @@ export class EventsInput
         const deltaY = e.deltaY;
         const eventId = this.eventId;
         this.rememberEvent('wheel', eventId, e);
-        (this.block.backend as WorkerBackend).worker.postMessage({
+        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
           type: 'wheel',
           payload: { x, y, deltaX, deltaY, eventId },
         });
@@ -147,7 +146,7 @@ export class EventsInput
         const pointerId = e.pointerId;
         const eventId = this.eventId;
         this.rememberEvent('pointerup', eventId, e);
-        (this.block.backend as WorkerBackend).worker.postMessage({
+        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
           type: 'pointerup',
           payload: { x, y, pointerId, eventId },
         });
@@ -175,7 +174,7 @@ export class EventsInput
         const pointerId = e.pointerId;
         const eventId = this.eventId;
         this.rememberEvent('pointermove', eventId, e);
-        (this.block.backend as WorkerBackend).worker.postMessage({
+        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
           type: 'pointermove',
           payload: { x, y, pointerId, eventId },
         });
@@ -200,7 +199,7 @@ export class EventsInput
         const code = e.code;
         const eventId = this.eventId;
         this.rememberEvent('keydown', eventId, e);
-        (this.block.backend as WorkerBackend).worker.postMessage({
+        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
           type: 'keydown',
           payload: { code, eventId },
         });
@@ -218,7 +217,7 @@ export class EventsInput
         const code = e.code;
         const eventId = this.eventId;
         this.rememberEvent('keyup', eventId, e);
-        (this.block.backend as WorkerBackend).worker.postMessage({
+        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
           type: 'keyup',
           payload: { code, eventId },
         });

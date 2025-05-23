@@ -1,13 +1,13 @@
 import { IFrontendComponent } from '../../types/blockComponents';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
+import { eventBus } from '../../communications/eventBus';
 
 export class CanvasFrontend
   extends BaseComponent
   implements IFrontendComponent
 {
   element: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
 
   constructor(readonly block: Block) {
     super(block);
@@ -18,8 +18,22 @@ export class CanvasFrontend
     this.element.height = this.block.container.h;
     this.element.tabIndex = -1;
 
-    this.ctx = this.element.getContext('2d')!;
+    const ctx = this.element.getContext('2d')!;
 
     this.onUnload(() => this.element.remove());
+
+    const { off } = eventBus.on(
+      `block:${this.block.xy.join(',')}:draw`,
+      (bitmap: ImageBitmap) => {
+        ctx.drawImage(
+          bitmap,
+          0,
+          0,
+          this.block.container.w,
+          this.block.container.h,
+        );
+      },
+    );
+    this.onUnload(off);
   }
 }

@@ -5,7 +5,6 @@ import { IBackendComponent } from '../../types/blockComponents';
 import { WorkerBackendConfig } from '../../types/blocks';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
-import { CanvasFrontend } from '../frontend/canvasFrontend';
 import { resourceLoader } from '../resources/resourceLoader';
 
 export class WorkerBackend extends BaseComponent implements IBackendComponent {
@@ -29,6 +28,13 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
       origin: this.block.xy,
     });
 
+    const { off } = eventBus.on(
+      `block:${this.block.xy.join(',')}:message`,
+      (message: unknown, options?: StructuredSerializeOptions) =>
+        this.worker.postMessage(message, options),
+    );
+    this.onUnload(off);
+
     this.onUnload(() => this.worker.terminate());
   }
 
@@ -38,12 +44,9 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
 
       switch (e.data.type) {
         case 'draw':
-          (this.block.frontend as CanvasFrontend).ctx.drawImage(
-            e.data.payload.bitmap as ImageBitmap,
-            0,
-            0,
-            this.block.container.w,
-            this.block.container.h,
+          eventBus.emit(
+            `block:${this.block.xy.join(',')}:draw`,
+            e.data.payload.bitmap,
           );
           break;
         case 'terminate':
