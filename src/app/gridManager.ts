@@ -25,6 +25,7 @@ export class GridManager {
   protected dragStart: XY | null = null;
   protected ctx: CanvasRenderingContext2D;
   private lastVisibleArea: XYWH | null = null;
+  private lastCenterCell: XY | null = null;
 
   constructor(
     protected canvas: HTMLCanvasElement,
@@ -33,6 +34,7 @@ export class GridManager {
     this.ctx = canvas.getContext('2d')!;
     eventBus.sync('window:resize', this.setCanvasSize.bind(this));
     this.moveTo(initialCoords);
+    eventBus.on('navBlock:jump', this.moveTo.bind(this));
     eventBus.on('wheel', this.canvas.dispatchEvent.bind(this.canvas));
     eventBus.on('pointerdown', this.canvas.dispatchEvent.bind(this.canvas));
     eventBus.on('pointerup', this.canvas.dispatchEvent.bind(this.canvas));
@@ -134,12 +136,31 @@ export class GridManager {
       this.isDragging = false;
       this.dragStart = null;
     }
+    this.emitCenterCellIfChanged();
   }
 
   setCanvasSize(width: number, height: number) {
     this.canvas.width = width;
     this.canvas.height = height;
     this.drawGrid();
+  }
+
+  get x(): number {
+    return Math.floor(
+      (this.offset[0] + this.canvas.width / (2 * this.scale) - CELL_SIZE / 2) /
+        CELL_SIZE,
+    );
+  }
+
+  get y(): number {
+    return Math.floor(
+      (this.offset[1] + this.canvas.height / (2 * this.scale) - CELL_SIZE / 2) /
+        CELL_SIZE,
+    );
+  }
+
+  get xy(): XY {
+    return [this.x, this.y];
   }
 
   drawGrid() {
@@ -178,10 +199,21 @@ export class GridManager {
 
     eventBus.emit('camera:moved', this.offset, this.scale);
 
-    this.emitVisibleAreaIfNeeded();
+    this.emitVisibleAreaIfChanged();
   }
 
-  private emitVisibleAreaIfNeeded() {
+  protected emitCenterCellIfChanged() {
+    if (
+      !this.lastCenterCell ||
+      this.x !== this.lastCenterCell[0] ||
+      this.y !== this.lastCenterCell[1]
+    ) {
+      eventBus.emit('grid:center-changed', this.xy);
+      this.lastCenterCell = this.xy;
+    }
+  }
+
+  protected emitVisibleAreaIfChanged() {
     const worldWidth = this.canvas.width / this.scale;
     const worldHeight = this.canvas.height / this.scale;
 
@@ -221,12 +253,17 @@ export class GridManager {
     }
   }
 
-  public moveTo(xy: XY) {
-    this.offset[0] =
-      xy[0] * CELL_SIZE - this.canvas.width / (2 * this.scale) + CELL_SIZE / 2;
-    this.offset[1] =
-      xy[1] * CELL_SIZE - this.canvas.height / (2 * this.scale) + CELL_SIZE / 2;
+  public moveTo([x, y]: XY) {
+    if (this.x === x && this.y === y) {
+      return;
+    }
+
+    this.offset = [
+      x * CELL_SIZE - this.canvas.width / (2 * this.scale) + CELL_SIZE / 2,
+      y * CELL_SIZE - this.canvas.height / (2 * this.scale) + CELL_SIZE / 2,
+    ];
 
     this.drawGrid();
+    this.emitCenterCellIfChanged();
   }
 }

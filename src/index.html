@@ -96,14 +96,12 @@
     </div>
     <script type="module">
       import { App } from "./app/app.ts";
-      import { setupNavBlockLogic } from "./app/ui/navBlock.ts";
+      import { setupNavBlock } from "./app/ui/navBlock.ts";
 
       const canvas = document.getElementById("gridCanvas");
       const app = new App(canvas);
 
-      setupNavBlockLogic((x, y) => {
-        app.gridManager.moveTo([x, y]);
-      });
+      setupNavBlock();
     </script>
   </body>
 </html>

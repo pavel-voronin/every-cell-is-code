@@ -2,11 +2,14 @@ import { BlockManager } from './blockManager';
 import { MetaManager } from './metaManager';
 import { GridManager } from './gridManager';
 import { eventBus } from './communications/eventBus';
+import { DEFAULT_COORDS } from './constants';
+import { XY } from './types/base';
 
 export class App {
   protected gridManager: GridManager;
   protected metaManager = new MetaManager();
   protected blockManager: BlockManager;
+  private ignoreNextHashChange = false;
 
   constructor(protected canvas: HTMLCanvasElement) {
     // Browser specific preparations
@@ -28,7 +31,38 @@ export class App {
 
     ('__PRELOAD_CHUNKS__'); // eslint-disable-line @typescript-eslint/no-unused-expressions
 
-    this.gridManager = new GridManager(canvas, [3, 3]);
+    const initialCoords = this.getCoordsFromHash() ?? DEFAULT_COORDS;
+    this.gridManager = new GridManager(canvas, initialCoords);
+
+    eventBus.on('grid:center-changed', ([x, y]: XY) => {
+      const hash = `#x=${x}&y=${y}`;
+      if (window.location.hash !== hash) {
+        this.ignoreNextHashChange = true;
+        history.replaceState(null, '', hash);
+      }
+    });
+
+    window.addEventListener('hashchange', () => {
+      if (this.ignoreNextHashChange) {
+        this.ignoreNextHashChange = false;
+        return;
+      }
+      const coords = this.getCoordsFromHash();
+      if (!coords) return;
+      const current = this.gridManager.xy;
+      if (!current || current[0] !== coords[0] || current[1] !== coords[1]) {
+        this.gridManager.moveTo(coords);
+      }
+    });
+  }
+
+  protected getCoordsFromHash(): XY | undefined {
+    const hash = window.location.hash;
+    const match = /#x=(-?\d+)&y=(-?\d+)/.exec(hash);
+    if (match) {
+      return [parseInt(match[1], 10), parseInt(match[2], 10)];
+    }
+    return undefined;
   }
 
   protected stopTouchEvents() {

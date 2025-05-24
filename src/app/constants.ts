@@ -11,3 +11,4 @@ export const TAP_THRESHOLD = 5;
 export const SCALE_STEP = 1.1;
 export const EVENT_RETENTION_TIMEOUT = 1000; // ms
 export const VISIBLE_AREA_MARGIN = 1;
+export const DEFAULT_COORDS: [number, number] = [3, 3];
