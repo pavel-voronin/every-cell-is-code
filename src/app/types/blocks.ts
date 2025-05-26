@@ -13,9 +13,12 @@ export type WorkerResourceSchema = {
 export type ImageFrontendConfig = {
   type: 'image';
   resource: ImageResourceSchema;
+  aspect: 'preserve' | 'fit';
   scale?: number;
-  left?: number;
-  top?: number;
+  anchorX?: 'right' | 'center' | 'left';
+  anchorY?: 'bottom' | 'center' | 'top';
+  offsetX?: number;
+  offsetY?: number;
 };
 
 export type CanvasFrontendConfig = {
