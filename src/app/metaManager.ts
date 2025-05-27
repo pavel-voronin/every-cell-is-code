@@ -38,13 +38,12 @@ export class MetaManager {
     );
   }
 
-  protected addBlockMeta(meta: unknown) {
-    const config = meta as BlockConfig;
-    this.origins.set([config.x, config.y], config);
+  protected addBlockMeta(meta: BlockConfig) {
+    this.origins.set([meta.x, meta.y], meta);
 
-    for (let dx = 0; dx < config.w; dx++) {
-      for (let dy = 0; dy < config.h; dy++) {
-        this.index.set([config.x + dx, config.y + dy], [config.x, config.y]);
+    for (let dx = 0; dx < meta.w; dx++) {
+      for (let dy = 0; dy < meta.h; dy++) {
+        this.index.set([meta.x + dx, meta.y + dy], [meta.x, meta.y]);
       }
     }
   }
@@ -80,10 +79,7 @@ export class MetaManager {
         }
 
         const data: unknown = await res.json();
-
-        // todo: validate
-
-        this.loadChunkData([chunkX, chunkY], data as Chunk);
+        this.loadChunkData([chunkX, chunkY], data);
       })
       .catch((err) => {
         this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
@@ -91,8 +87,10 @@ export class MetaManager {
       });
   }
 
-  loadChunkData(chunkXY: XY, data: Chunk) {
-    for (const meta of data) {
+  loadChunkData(chunkXY: XY, data: unknown) {
+    Chunk.parse(data);
+
+    for (const meta of data as Chunk) {
       this.addBlockMeta(meta);
     }
 
