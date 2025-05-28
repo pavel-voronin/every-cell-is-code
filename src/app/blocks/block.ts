@@ -1,5 +1,5 @@
 import { XY } from '../types/base';
-import { BlockConfig } from '../types/blocks';
+import { BlockConfig, BlockStatus, BlockVisualState } from '../types/blocks';
 import {
   IBackendComponent,
   IContainerComponent,
@@ -16,16 +16,20 @@ import { SignalsInput } from './input/signalsInput';
 
 export class Block {
   container: IContainerComponent;
-  eventsInput: IEventsInputComponent;
+  eventsInput?: IEventsInputComponent;
   signalsInput: ISignalsInputComponent;
   frontend?: IFrontendComponent;
   backend?: IBackendComponent;
 
   constructor(readonly config: BlockConfig) {
     this.container = new Container(this);
-    this.eventsInput = new EventsInput(this);
+    if (this.visualState.interactive) {
+      this.eventsInput = new EventsInput(this);
+    }
     this.signalsInput = new SignalsInput(this);
-    this.initFrontend();
+    if (this.visualState.frontend === 'default') {
+      this.initFrontend();
+    }
     this.initBackend();
   }
 
@@ -52,7 +56,7 @@ export class Block {
   unload() {
     this.backend?.unload();
     this.frontend?.unload();
-    this.eventsInput.unload();
+    this.eventsInput?.unload();
     this.signalsInput.unload();
     this.container.unload();
   }
@@ -74,5 +78,28 @@ export class Block {
   }
   get h(): number {
     return this.config.h;
+  }
+  get status(): BlockStatus {
+    // todo add runtime status, do not store it
+    return this.config.status;
+  }
+
+  // todo: should it be reactive?
+  get visualState() {
+    return this.computeBlockVisualState();
+  }
+
+  // todo: add global/user ctx/preferences
+  // userPreferences: {
+  //   showNSFW?: boolean;
+  // } = {},
+  computeBlockVisualState(): BlockVisualState {
+    // if (this.status.published === 'published') {
+    // }
+
+    return {
+      frontend: 'default',
+      interactive: true,
+    };
   }
 }

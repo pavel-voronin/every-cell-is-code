@@ -60,6 +60,16 @@ export const BlockEvents = z.object({
 });
 export type BlockEvents = z.infer<typeof BlockEvents>;
 
+// todo remove defaults
+export const BlockStatus = z.object({
+  published: z.enum(['draft', 'published']).default('draft'),
+  runtime: z.enum(['active', 'hibernated', 'terminated']).default('active'),
+  moderation: z
+    .enum(['unchecked', 'ok', 'nsfw', 'banned'])
+    .default('unchecked'),
+});
+export type BlockStatus = z.infer<typeof BlockStatus>;
+
 export const BlockConfig = z.object({
   x: z.number(),
   y: z.number(),
@@ -68,8 +78,17 @@ export const BlockConfig = z.object({
   frontend: FrontendConfig,
   backend: BackendConfig,
   input: z.object({ events: BlockEvents }),
+  status: BlockStatus,
 });
 export type BlockConfig = z.infer<typeof BlockConfig>;
 
 export const Chunk = z.array(BlockConfig);
 export type Chunk = z.infer<typeof Chunk>;
+
+export const BlockVisualState = z.object({
+  frontend: z
+    .enum(['default', 'nsfw', 'terminated', 'draft', 'banned'])
+    .default('default'),
+  interactive: z.boolean(),
+});
+export type BlockVisualState = z.infer<typeof BlockVisualState>;
