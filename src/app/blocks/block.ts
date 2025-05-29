@@ -1,5 +1,5 @@
 import { XY } from '../types/base';
-import { BlockConfig, BlockStatus, BlockVisualState } from '../types/blocks';
+import { BlockConfig, BlockStatus, BlockState } from '../types/blocks';
 import {
   IBackendComponent,
   IContainerComponent,
@@ -23,11 +23,11 @@ export class Block {
 
   constructor(readonly config: BlockConfig) {
     this.container = new Container(this);
-    if (this.visualState.interactive) {
+    if (this.state.interactive) {
       this.eventsInput = new EventsInput(this);
     }
     this.signalsInput = new SignalsInput(this);
-    if (this.visualState.frontend === 'default') {
+    if (this.state.frontend === 'default') {
       this.initFrontend();
     }
     this.initBackend();
@@ -80,12 +80,14 @@ export class Block {
     return this.config.h;
   }
   get status(): BlockStatus {
-    // todo add runtime status, do not store it
-    return this.config.status;
+    return {
+      ...this.config.status,
+      runtime: 'active', // todo: manage it
+    };
   }
 
   // todo: should it be reactive?
-  get visualState() {
+  get state() {
     return this.computeBlockVisualState();
   }
 
@@ -93,7 +95,7 @@ export class Block {
   // userPreferences: {
   //   showNSFW?: boolean;
   // } = {},
-  computeBlockVisualState(): BlockVisualState {
+  computeBlockVisualState(): BlockState {
     // if (this.status.published === 'published') {
     // }
 
