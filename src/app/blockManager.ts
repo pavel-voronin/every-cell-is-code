@@ -12,24 +12,21 @@ export class BlockManager {
     eventBus.on('block:worker-error', (xy: XY) => {
       const block = this.blocks.get(xy);
       if (block) {
-        block.unload();
-        this.blocks.delete(xy);
+        block.setStatus('runtime', 'terminated');
       }
     });
 
     eventBus.on('block:worker-messageerror', (xy: XY) => {
       const block = this.blocks.get(xy);
       if (block) {
-        block.unload();
-        this.blocks.delete(xy);
+        block.setStatus('runtime', 'terminated');
       }
     });
 
     eventBus.on('block:terminate', (xy: XY) => {
       const block = this.blocks.get(xy);
       if (block) {
-        block.unload();
-        this.blocks.delete(xy);
+        block.setStatus('runtime', 'terminated');
       }
     });
 

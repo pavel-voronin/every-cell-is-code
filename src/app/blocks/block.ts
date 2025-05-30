@@ -1,5 +1,9 @@
 import { XY } from '../types/base';
-import { BlockConfig, BlockStatus, BlockState } from '../types/blocks';
+import {
+  BlockConfig,
+  BlockStatus,
+  BlockComponentLayout,
+} from '../types/blocks';
 import {
   IBackendComponent,
   IContainerComponent,
@@ -13,35 +17,60 @@ import { ImageFrontend } from './frontend/imageFrontend';
 import { EventsInput } from './input/eventsInput';
 import { WorkerBackend } from './backend/workerBackend';
 import { SignalsInput } from './input/signalsInput';
+import { TerminatedFrontend } from './frontend/terminatedFrontend';
 
 export class Block {
-  container: IContainerComponent;
+  public status!: BlockStatus;
+  public state!: BlockComponentLayout;
+
+  container!: IContainerComponent;
   eventsInput?: IEventsInputComponent;
-  signalsInput: ISignalsInputComponent;
+  signalsInput?: ISignalsInputComponent;
   frontend?: IFrontendComponent;
   backend?: IBackendComponent;
 
   constructor(readonly config: BlockConfig) {
+    this.status = {
+      ...this.config.status,
+      runtime: 'active', // todo: manage it
+    };
+    this.computeBlockComponentLayout();
+    this.initComponents();
+  }
+
+  setStatus<K extends keyof BlockStatus>(axis: K, value: BlockStatus[K]): void {
+    this.status[axis] = value;
+    this.computeBlockComponentLayout();
+    this.initComponents();
+  }
+
+  protected initComponents() {
+    this.unload();
+
     this.container = new Container(this);
     if (this.state.interactive) {
       this.eventsInput = new EventsInput(this);
     }
     this.signalsInput = new SignalsInput(this);
-    if (this.state.frontend === 'default') {
-      this.initFrontend();
-    }
+    this.initFrontend();
     this.initBackend();
   }
 
   protected initFrontend() {
-    if (this.config.frontend.type === 'image') {
-      this.frontend = new ImageFrontend(this);
-      this.container.appendFrontend(this.frontend);
-    } else if (this.config.frontend.type === 'canvas') {
-      this.frontend = new CanvasFrontend(this);
-      this.container.appendFrontend(this.frontend);
-    } else if (this.config.frontend.type === 'none') {
-      // No frontend
+    if (this.state.frontend === 'terminated') {
+      this.frontend = new TerminatedFrontend(this);
+      this.container!.appendFrontend(this.frontend);
+      return;
+    } else if (this.state.frontend === 'default') {
+      if (this.config.frontend.type === 'image') {
+        this.frontend = new ImageFrontend(this);
+        this.container!.appendFrontend(this.frontend);
+      } else if (this.config.frontend.type === 'canvas') {
+        this.frontend = new CanvasFrontend(this);
+        this.container!.appendFrontend(this.frontend);
+      } else if (this.config.frontend.type === 'none') {
+        // No frontend
+      }
     }
   }
 
@@ -54,11 +83,11 @@ export class Block {
   }
 
   unload() {
-    this.backend?.unload();
-    this.frontend?.unload();
-    this.eventsInput?.unload();
-    this.signalsInput.unload();
-    this.container.unload();
+    if (this.backend) this.backend.unload();
+    if (this.frontend) this.frontend.unload();
+    if (this.eventsInput) this.eventsInput.unload();
+    if (this.signalsInput) this.signalsInput.unload();
+    if (this.container) this.container.unload();
   }
 
   get xy(): XY {
@@ -79,29 +108,24 @@ export class Block {
   get h(): number {
     return this.config.h;
   }
-  get status(): BlockStatus {
-    return {
-      ...this.config.status,
-      runtime: 'active', // todo: manage it
-    };
-  }
-
-  // todo: should it be reactive?
-  get state() {
-    return this.computeBlockVisualState();
-  }
 
   // todo: add global/user ctx/preferences
   // userPreferences: {
   //   showNSFW?: boolean;
   // } = {},
-  computeBlockVisualState(): BlockState {
-    // if (this.status.published === 'published') {
-    // }
-
-    return {
-      frontend: 'default',
-      interactive: true,
-    };
+  computeBlockComponentLayout() {
+    if (this.status.runtime === 'terminated') {
+      this.state = {
+        frontend: 'terminated',
+        backend: 'none',
+        interactive: false,
+      };
+    } else {
+      this.state = {
+        frontend: 'default',
+        backend: 'default',
+        interactive: true,
+      };
+    }
   }
 }

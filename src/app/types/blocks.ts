@@ -89,10 +89,11 @@ export type BlockConfig = z.infer<typeof BlockConfig>;
 export const Chunk = z.array(BlockConfig);
 export type Chunk = z.infer<typeof Chunk>;
 
-export const BlockState = z.object({
+export const BlockComponentLayout = z.object({
   frontend: z
     .enum(['default', 'nsfw', 'terminated', 'draft', 'banned'])
     .default('default'),
+  backend: z.enum(['default', 'none']).default('default'),
   interactive: z.boolean(),
 });
-export type BlockState = z.infer<typeof BlockState>;
+export type BlockComponentLayout = z.infer<typeof BlockComponentLayout>;

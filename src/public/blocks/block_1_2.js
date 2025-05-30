@@ -1,12 +1,14 @@
 function onPointerDown() {
-  self.sendSignal({
-    to: [origin[0] + 2, origin[1]],
-    payload: {
-      text: 'Hello from block 1.2',
-    },
-  });
+  throw new Error('Error');
 
-  return false;
+  // self.sendSignal({
+  //   to: [origin[0] + 2, origin[1]],
+  //   payload: {
+  //     text: 'Hello from block 1.2',
+  //   },
+  // });
+
+  // return false;
 }
 
 function onUpdate(delta) {
