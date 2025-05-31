@@ -47,13 +47,27 @@ export class Block {
   protected initComponents() {
     this.unload();
 
-    this.container = new Container(this);
-    if (this.state.interactive) {
-      this.eventsInput = new EventsInput(this);
-    }
-    this.signalsInput = new SignalsInput(this);
+    this.initContainer();
+    this.initEventsInput();
+    this.initSignalsInput();
     this.initFrontend();
     this.initBackend();
+  }
+
+  protected initContainer() {
+    this.container = new Container(this);
+  }
+
+  protected initEventsInput() {
+    if (this.state.events) {
+      this.eventsInput = new EventsInput(this);
+    }
+  }
+
+  protected initSignalsInput() {
+    if (this.state.signals) {
+      this.signalsInput = new SignalsInput(this);
+    }
   }
 
   protected initFrontend() {
@@ -118,13 +132,15 @@ export class Block {
       this.state = {
         frontend: 'terminated',
         backend: 'none',
-        interactive: false,
+        events: false,
+        signals: false,
       };
     } else {
       this.state = {
         frontend: 'default',
         backend: 'default',
-        interactive: true,
+        events: true,
+        signals: true,
       };
     }
   }
