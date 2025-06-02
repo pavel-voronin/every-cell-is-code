@@ -19,6 +19,7 @@ import { WorkerBackend } from './backend/workerBackend';
 import { SignalsInput } from './input/signalsInput';
 import { TerminatedFrontend } from './frontend/terminatedFrontend';
 import { BannedFrontend } from './frontend/bannedFrontend';
+import { DraftFrontend } from './frontend/draftFrontend';
 
 export class Block {
   public status!: BlockStatus;
@@ -74,6 +75,10 @@ export class Block {
   protected initFrontend() {
     if (this.state.frontend === 'banned') {
       this.frontend = new BannedFrontend(this);
+      this.container!.appendFrontend(this.frontend);
+      return;
+    } else if (this.state.frontend === 'draft') {
+      this.frontend = new DraftFrontend(this);
       this.container!.appendFrontend(this.frontend);
       return;
     } else if (this.state.frontend === 'terminated') {
@@ -143,6 +148,13 @@ export class Block {
     } else if (this.status.runtime === 'terminated') {
       this.state = {
         frontend: 'terminated',
+        backend: 'none',
+        events: false,
+        signals: false,
+      };
+    } else if (this.status.published === 'draft') {
+      this.state = {
+        frontend: 'draft',
         backend: 'none',
         events: false,
         signals: false,
