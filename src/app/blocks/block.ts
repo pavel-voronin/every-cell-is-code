@@ -20,6 +20,7 @@ import { SignalsInput } from './input/signalsInput';
 import { TerminatedFrontend } from './frontend/terminatedFrontend';
 import { BannedFrontend } from './frontend/bannedFrontend';
 import { DraftFrontend } from './frontend/draftFrontend';
+import { NSFWFrontend } from './frontend/nsfwFrontend';
 
 export class Block {
   public status!: BlockStatus;
@@ -83,6 +84,10 @@ export class Block {
       return;
     } else if (this.state.frontend === 'terminated') {
       this.frontend = new TerminatedFrontend(this);
+      this.container!.appendFrontend(this.frontend);
+      return;
+    } else if (this.state.frontend === 'nsfw') {
+      this.frontend = new NSFWFrontend(this);
       this.container!.appendFrontend(this.frontend);
       return;
     } else if (this.state.frontend === 'default') {
