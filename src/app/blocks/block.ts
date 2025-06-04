@@ -21,6 +21,7 @@ import { TerminatedFrontend } from './frontend/terminatedFrontend';
 import { BannedFrontend } from './frontend/bannedFrontend';
 import { DraftFrontend } from './frontend/draftFrontend';
 import { NSFWFrontend } from './frontend/nsfwFrontend';
+import { NSFWEventsInput } from './input/nsfwEventsInput';
 
 export class Block {
   public status!: BlockStatus;
@@ -62,8 +63,12 @@ export class Block {
   }
 
   protected initEventsInput() {
-    if (this.state.events) {
+    if (this.state.events === 'default') {
       this.eventsInput = new EventsInput(this);
+    } else if (this.state.events === 'nsfw') {
+      this.eventsInput = new NSFWEventsInput(this);
+    } else if (this.state.events === 'none') {
+      // No events input
     }
   }
 
@@ -143,32 +148,39 @@ export class Block {
   //   showNSFW?: boolean;
   // } = {},
   computeBlockComponentLayout() {
-    if (this.status.moderation === 'banned') {
+    if (this.status.moderation === 'nsfw') {
+      this.state = {
+        frontend: 'nsfw',
+        backend: 'none',
+        events: 'nsfw',
+        signals: false,
+      };
+    } else if (this.status.moderation === 'banned') {
       this.state = {
         frontend: 'banned',
         backend: 'none',
-        events: false,
+        events: 'none',
         signals: false,
       };
     } else if (this.status.runtime === 'terminated') {
       this.state = {
         frontend: 'terminated',
         backend: 'none',
-        events: false,
+        events: 'none',
         signals: false,
       };
     } else if (this.status.published === 'draft') {
       this.state = {
         frontend: 'draft',
         backend: 'none',
-        events: false,
+        events: 'none',
         signals: false,
       };
     } else {
       this.state = {
         frontend: 'default',
         backend: 'default',
-        events: true,
+        events: 'default',
         signals: true,
       };
     }

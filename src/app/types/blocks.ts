@@ -94,7 +94,7 @@ export const BlockComponentLayout = z.object({
     .enum(['default', 'nsfw', 'terminated', 'draft', 'banned'])
     .default('default'),
   backend: z.enum(['default', 'none']).default('default'),
-  events: z.boolean(),
+  events: z.enum(['default', 'nsfw', 'none']).default('default'),
   signals: z.boolean(),
 });
 export type BlockComponentLayout = z.infer<typeof BlockComponentLayout>;

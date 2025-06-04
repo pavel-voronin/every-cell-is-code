@@ -20,5 +20,7 @@
       "pointerdown": true
     }
   },
-  "status": {}
+  "status": {
+    "moderation": "nsfw"
+  }
 }
