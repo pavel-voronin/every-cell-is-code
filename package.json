@@ -1,6 +1,6 @@
 {
   "name": "every-cell-is-code",
-  "version": "0.0.91",
+  "version": "0.0.92",
   "description": "An infinite canvas where every cell is a live JavaScript worker",
   "type": "module",
   "scripts": {

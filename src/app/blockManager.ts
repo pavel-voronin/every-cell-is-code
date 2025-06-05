@@ -9,27 +9,6 @@ export class BlockManager {
   private visibleChunksRequestId = 0;
 
   constructor(protected metaManager: MetaManager) {
-    eventBus.on('block:worker-error', (xy: XY) => {
-      const block = this.blocks.get(xy);
-      if (block) {
-        block.setStatus('runtime', 'terminated');
-      }
-    });
-
-    eventBus.on('block:worker-messageerror', (xy: XY) => {
-      const block = this.blocks.get(xy);
-      if (block) {
-        block.setStatus('runtime', 'terminated');
-      }
-    });
-
-    eventBus.on('block:terminate', (xy: XY) => {
-      const block = this.blocks.get(xy);
-      if (block) {
-        block.setStatus('runtime', 'terminated');
-      }
-    });
-
     eventBus.on(
       'meta:visible-chunks-loaded',
       (minX: number, maxX: number, minY: number, maxY: number) => {

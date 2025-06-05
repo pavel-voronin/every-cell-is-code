@@ -17,6 +17,22 @@ export class EventsInput
   constructor(readonly block: Block) {
     super(block);
 
+    const { off: offWorkerError } = eventBus.on(
+      `block:${this.block.xy.join(',')}:worker-error`,
+      () => {
+        this.block.setStatus('runtime', 'terminated');
+      },
+    );
+    this.onUnload(offWorkerError);
+
+    const { off: offWorkerMessageError } = eventBus.on(
+      `block:${this.block.xy.join(',')}:worker-messageerror`,
+      () => {
+        this.block.setStatus('runtime', 'terminated');
+      },
+    );
+    this.onUnload(offWorkerMessageError);
+
     this.initializeCanvasEventListener();
     this.cleanupOldEvents();
     this.onUnload(() => this.rememberedEvents.clear());

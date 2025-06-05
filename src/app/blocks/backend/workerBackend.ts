@@ -50,7 +50,7 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
           );
           break;
         case 'terminate':
-          eventBus.emit('block:terminate', this.block.xy);
+          this.block.setStatus('runtime', 'terminated');
           break;
         case 'subscribe': {
           const { to, topic, radius } = e.data as MessageEvent<{
@@ -108,11 +108,11 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
     });
 
     this.worker.addEventListener('error', (e: ErrorEvent) => {
-      eventBus.emit('block:worker-error', this.block.xy, e);
+      eventBus.emit(`block:${this.block.xy.join(',')}:worker-error`, e);
     });
 
     this.worker.addEventListener('messageerror', (e: MessageEvent) => {
-      eventBus.emit('block:worker-messageerror', this.block.xy, e);
+      eventBus.emit(`block:${this.block.xy.join(',')}:worker-messageerror`, e);
     });
   }
 }
