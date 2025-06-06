@@ -9,9 +9,8 @@ export interface IFrontendComponent extends IBlockComponent {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IBackendComponent extends IBlockComponent {}
 
-export interface IEventsInputComponent extends IBlockComponent {
-  reEmitEvent(eventId: number): void;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface IEventsInputComponent extends IBlockComponent {}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ISignalsInputComponent extends IBlockComponent {}

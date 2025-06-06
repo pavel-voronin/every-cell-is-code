@@ -17,6 +17,14 @@ export class EventsInput
   constructor(readonly block: Block) {
     super(block);
 
+    const { off: offReEmit } = eventBus.on(
+      `block:${this.block.xy.join(',')}:re-emit`,
+      (eventId: number) => {
+        this.reEmitEvent(eventId);
+      },
+    );
+    this.onUnload(offReEmit);
+
     const { off: offWorkerError } = eventBus.on(
       `block:${this.block.xy.join(',')}:worker-error`,
       () => {

@@ -101,7 +101,10 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
             e.data.payload.eventId !== undefined &&
             typeof e.data.payload.eventId === 'number'
           ) {
-            this.block.eventsInput.reEmitEvent(e.data.payload.eventId);
+            eventBus.emit(
+              `block:${this.block.xy.join(',')}:re-emit`,
+              e.data.payload.eventId,
+            );
           }
           break;
       }

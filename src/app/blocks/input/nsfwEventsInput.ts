@@ -1,5 +1,4 @@
 import { eventBus } from '../../communications/eventBus';
-import { EVENT_RETENTION_TIMEOUT } from '../../constants';
 import { IEventsInputComponent } from '../../types/blockComponents';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
@@ -9,54 +8,15 @@ export class NSFWEventsInput
   implements IEventsInputComponent
 {
   protected eventIdCounter: number = 0;
-  protected rememberedEvents = new Map<
-    number,
-    { type: string; event: Event; timestamp: number }
-  >();
 
   constructor(readonly block: Block) {
     super(block);
 
     this.initializeCanvasEventListener();
-    this.cleanupOldEvents();
-    this.onUnload(() => this.rememberedEvents.clear());
-  }
-
-  // Periodically clean up old remembered events
-  protected cleanupOldEvents() {
-    const cleanupOldEventsInterval = setInterval(() => {
-      const now = Date.now();
-      for (const [eventId, { timestamp }] of this.rememberedEvents.entries()) {
-        if (now - timestamp > EVENT_RETENTION_TIMEOUT) {
-          this.rememberedEvents.delete(eventId);
-        }
-      }
-    }, EVENT_RETENTION_TIMEOUT);
-
-    this.onUnload(() => {
-      clearInterval(cleanupOldEventsInterval);
-    });
   }
 
   get eventId() {
     return this.eventIdCounter++;
-  }
-
-  protected rememberEvent(type: string, eventId: number, e: Event) {
-    this.rememberedEvents.set(eventId, {
-      type,
-      event: e,
-      timestamp: Date.now(),
-    });
-  }
-
-  reEmitEvent(eventId: number) {
-    const rememberedEvent = this.rememberedEvents.get(eventId)?.event;
-
-    if (rememberedEvent) {
-      eventBus.emit(rememberedEvent.type, rememberedEvent);
-      this.rememberedEvents.delete(eventId);
-    }
   }
 
   get config() {
