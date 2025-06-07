@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { version, preloadChunks } from './package.json';
+import { preloadChunks } from './package.json';
 import fs from 'fs';
 import { CHUNK_SIZE } from './src/app/constants';
 import path from 'path';
@@ -15,12 +15,6 @@ export default defineConfig({
     allowedHosts: true,
   },
   plugins: [
-    {
-      name: 'inject-version',
-      transformIndexHtml(html) {
-        return html.replace(/%APP_VERSION%/g, version);
-      },
-    },
     {
       name: 'generate-known-chunks',
       buildStart() {

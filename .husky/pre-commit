@@ -1,9 +1,2 @@
-if git diff --cached --quiet package.json; then
-  if ! git diff --cached --quiet src/app; then
-    npm version patch --no-git-tag-version
-    git add package.json package-lock.json
-  fi
-fi
-
 npx lint-staged
 npm run test
