@@ -20,8 +20,8 @@ export class Container extends BaseComponent implements IContainerComponent {
     document.body.appendChild(this.container);
     this.onUnload(() => this.container.remove());
 
-    eventBus.sync('camera:moved', this.cameraMovedHandler);
-    this.onUnload(() => eventBus.off('camera:moved', this.cameraMovedHandler));
+    const { off } = eventBus.sync('camera:moved', this.cameraMovedHandler);
+    this.onUnload(off);
   }
 
   protected cameraMovedHandler = ([x, y]: XY, scale: number) => {

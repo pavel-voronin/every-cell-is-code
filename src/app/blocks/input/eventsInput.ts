@@ -17,24 +17,24 @@ export class EventsInput
   constructor(readonly block: Block) {
     super(block);
 
-    const { off: offReEmit } = eventBus.on(
-      `block:${this.block.xy.join(',')}:re-emit`,
+    const { off: offReEmit } = this.block.eventBus.on(
+      `re-emit`,
       (eventId: number) => {
         this.reEmitEvent(eventId);
       },
     );
     this.onUnload(offReEmit);
 
-    const { off: offWorkerError } = eventBus.on(
-      `block:${this.block.xy.join(',')}:worker-error`,
+    const { off: offWorkerError } = this.block.eventBus.on(
+      `worker-error`,
       () => {
         this.block.setStatus('runtime', 'terminated');
       },
     );
     this.onUnload(offWorkerError);
 
-    const { off: offWorkerMessageError } = eventBus.on(
-      `block:${this.block.xy.join(',')}:worker-messageerror`,
+    const { off: offWorkerMessageError } = this.block.eventBus.on(
+      `worker-messageerror`,
       () => {
         this.block.setStatus('runtime', 'terminated');
       },
@@ -115,7 +115,7 @@ export class EventsInput
         const pointerId = e.pointerId;
         const eventId = this.eventId;
         this.rememberEvent('pointerdown', eventId, e);
-        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
+        this.block.eventBus.emit(`message`, {
           type: 'pointerdown',
           payload: { x, y, pointerId, eventId },
         });
@@ -145,7 +145,7 @@ export class EventsInput
         const deltaY = e.deltaY;
         const eventId = this.eventId;
         this.rememberEvent('wheel', eventId, e);
-        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
+        this.block.eventBus.emit(`message`, {
           type: 'wheel',
           payload: { x, y, deltaX, deltaY, eventId },
         });
@@ -170,7 +170,7 @@ export class EventsInput
         const pointerId = e.pointerId;
         const eventId = this.eventId;
         this.rememberEvent('pointerup', eventId, e);
-        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
+        this.block.eventBus.emit(`message`, {
           type: 'pointerup',
           payload: { x, y, pointerId, eventId },
         });
@@ -198,7 +198,7 @@ export class EventsInput
         const pointerId = e.pointerId;
         const eventId = this.eventId;
         this.rememberEvent('pointermove', eventId, e);
-        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
+        this.block.eventBus.emit(`message`, {
           type: 'pointermove',
           payload: { x, y, pointerId, eventId },
         });
@@ -223,7 +223,7 @@ export class EventsInput
         const code = e.code;
         const eventId = this.eventId;
         this.rememberEvent('keydown', eventId, e);
-        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
+        this.block.eventBus.emit(`message`, {
           type: 'keydown',
           payload: { code, eventId },
         });
@@ -241,7 +241,7 @@ export class EventsInput
         const code = e.code;
         const eventId = this.eventId;
         this.rememberEvent('keyup', eventId, e);
-        eventBus.emit(`block:${this.block.xy.join(',')}:message`, {
+        this.block.eventBus.emit(`message`, {
           type: 'keyup',
           payload: { code, eventId },
         });

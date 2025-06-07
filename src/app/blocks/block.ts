@@ -22,10 +22,12 @@ import { BannedFrontend } from './frontend/bannedFrontend';
 import { DraftFrontend } from './frontend/draftFrontend';
 import { NSFWFrontend } from './frontend/nsfwFrontend';
 import { NSFWEventsInput } from './input/nsfwEventsInput';
+import { EventBus } from '../communications/eventBus';
 
 export class Block {
   public status!: BlockStatus;
   public state!: BlockComponentLayout;
+  public readonly eventBus = new EventBus();
 
   container!: IContainerComponent;
   eventsInput?: IEventsInputComponent;

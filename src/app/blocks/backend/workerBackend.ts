@@ -1,4 +1,3 @@
-import { eventBus } from '../../communications/eventBus';
 import { signalBus } from '../../communications/signalBus';
 import { XY } from '../../types/base';
 import { IBackendComponent } from '../../types/blockComponents';
@@ -28,8 +27,8 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
       origin: this.block.xy,
     });
 
-    const { off } = eventBus.on(
-      `block:${this.block.xy.join(',')}:message`,
+    const { off } = this.block.eventBus.on(
+      `message`,
       (message: unknown, options?: StructuredSerializeOptions) =>
         this.worker.postMessage(message, options),
     );
@@ -44,10 +43,7 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
 
       switch (e.data.type) {
         case 'draw':
-          eventBus.emit(
-            `block:${this.block.xy.join(',')}:draw`,
-            e.data.payload.bitmap,
-          );
+          this.block.eventBus.emit(`draw`, e.data.payload.bitmap);
           break;
         case 'terminate':
           this.block.setStatus('runtime', 'terminated');
@@ -101,21 +97,18 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
             e.data.payload.eventId !== undefined &&
             typeof e.data.payload.eventId === 'number'
           ) {
-            eventBus.emit(
-              `block:${this.block.xy.join(',')}:re-emit`,
-              e.data.payload.eventId,
-            );
+            this.block.eventBus.emit(`re-emit`, e.data.payload.eventId);
           }
           break;
       }
     });
 
     this.worker.addEventListener('error', (e: ErrorEvent) => {
-      eventBus.emit(`block:${this.block.xy.join(',')}:worker-error`, e);
+      this.block.eventBus.emit(`worker-error`, e);
     });
 
     this.worker.addEventListener('messageerror', (e: MessageEvent) => {
-      eventBus.emit(`block:${this.block.xy.join(',')}:worker-messageerror`, e);
+      this.block.eventBus.emit(`worker-messageerror`, e);
     });
   }
 }

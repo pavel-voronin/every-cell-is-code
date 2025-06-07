@@ -48,11 +48,7 @@ export class SignalBus {
         }
 
         if (match) {
-          eventBus.emit(
-            `block:${subscriber[0]},${subscriber[1]}:signal`,
-            from,
-            payload,
-          );
+          eventBus.emit(`block:signal`, subscriber, from, payload);
         }
       }
     }

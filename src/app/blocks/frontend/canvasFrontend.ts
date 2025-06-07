@@ -1,7 +1,6 @@
 import { IFrontendComponent } from '../../types/blockComponents';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
-import { eventBus } from '../../communications/eventBus';
 
 export class CanvasFrontend
   extends BaseComponent
@@ -22,18 +21,15 @@ export class CanvasFrontend
 
     this.onUnload(() => this.element.remove());
 
-    const { off } = eventBus.on(
-      `block:${this.block.xy.join(',')}:draw`,
-      (bitmap: ImageBitmap) => {
-        ctx.drawImage(
-          bitmap,
-          0,
-          0,
-          this.block.container.w,
-          this.block.container.h,
-        );
-      },
-    );
+    const { off } = this.block.eventBus.on(`draw`, (bitmap: ImageBitmap) => {
+      ctx.drawImage(
+        bitmap,
+        0,
+        0,
+        this.block.container.w,
+        this.block.container.h,
+      );
+    });
     this.onUnload(off);
   }
 }

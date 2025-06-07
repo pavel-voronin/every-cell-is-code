@@ -9,6 +9,14 @@ export class BlockManager {
   private visibleChunksRequestId = 0;
 
   constructor(protected metaManager: MetaManager) {
+    eventBus.on(`block:signal`, (to: XY, from: XY, payload: unknown) => {
+      const subscriber = this.blocks.get(to);
+
+      if (subscriber) {
+        subscriber.eventBus.emit(`signal`, from, payload);
+      }
+    });
+
     eventBus.on(
       'meta:visible-chunks-loaded',
       (minX: number, maxX: number, minY: number, maxY: number) => {

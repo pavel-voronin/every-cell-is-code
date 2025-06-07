@@ -19,6 +19,10 @@ export class EventBus {
     if (event in this.lastStates) {
       handler(...this.lastStates[event]);
     }
+
+    return {
+      off: () => this.off(event, handler),
+    };
   }
 
   off(event: string, handler: EventHandler) {
