@@ -39,8 +39,6 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
 
   protected initializeWorkerEventListeners() {
     this.worker.addEventListener('message', (e: MessageEvent) => {
-      e.data.payload ??= {};
-
       switch (e.data.type) {
         case 'draw':
           this.block.eventBus.emit(`draw`, e.data.bitmap);
@@ -94,10 +92,10 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
         }
         case 're-emit':
           if (
-            e.data.payload.eventId !== undefined &&
-            typeof e.data.payload.eventId === 'number'
+            e.data.eventId !== undefined &&
+            typeof e.data.eventId === 'number'
           ) {
-            this.block.eventBus.emit(`re-emit`, e.data.payload.eventId);
+            this.block.eventBus.emit(`re-emit`, e.data.eventId);
           }
           break;
       }

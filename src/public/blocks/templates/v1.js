@@ -248,10 +248,7 @@ function sendFrame() {
 }
 
 function reEmit(eventId) {
-  self.postMessage({
-    type: 're-emit',
-    payload: { eventId },
-  });
+  self.postMessage({ type: 're-emit', eventId });
 }
 
 function setFPS(fps) {
