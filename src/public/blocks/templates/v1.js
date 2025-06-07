@@ -241,7 +241,7 @@ function sendFrame() {
   self.postMessage(
     {
       type: 'draw',
-      payload: { bitmap },
+      bitmap,
     },
     [bitmap],
   );

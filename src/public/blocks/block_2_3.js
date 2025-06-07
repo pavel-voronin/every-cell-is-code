@@ -78,9 +78,7 @@ function onUpdate(delta) {
   self.postMessage(
     {
       type: 'draw',
-      payload: {
-        bitmap,
-      },
+      bitmap,
     },
     [bitmap],
   );

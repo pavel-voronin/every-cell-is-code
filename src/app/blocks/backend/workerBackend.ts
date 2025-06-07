@@ -43,7 +43,7 @@ export class WorkerBackend extends BaseComponent implements IBackendComponent {
 
       switch (e.data.type) {
         case 'draw':
-          this.block.eventBus.emit(`draw`, e.data.payload.bitmap);
+          this.block.eventBus.emit(`draw`, e.data.bitmap);
           break;
         case 'terminate':
           this.block.setStatus('runtime', 'terminated');
