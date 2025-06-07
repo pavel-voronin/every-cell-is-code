@@ -1,4 +1,4 @@
-import { XY } from '../types/base';
+import { XY } from '../types/utils';
 import {
   BlockConfig,
   BlockStatus,

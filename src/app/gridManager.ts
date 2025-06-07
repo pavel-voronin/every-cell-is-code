@@ -11,7 +11,7 @@ import {
   TAP_THRESHOLD,
   VISIBLE_AREA_MARGIN,
 } from './constants';
-import { XY, XYWH } from './types/base';
+import { XY, XYWH } from './types/utils';
 import { eventBus } from './communications/eventBus';
 
 export class GridManager {

@@ -1,5 +1,5 @@
 import { signalBus } from '../../communications/signalBus';
-import { XY } from '../../types/base';
+import { XY } from '../../types/utils';
 import { IBackendComponent } from '../../types/blockComponents';
 import { WorkerBackendConfig } from '../../types/blocks';
 import { Block } from '../block';

@@ -9,7 +9,7 @@ vi.mock('../app/communications/eventBus', () => ({
 
 import { SignalBus } from '../app/communications/signalBus';
 import { eventBus } from '../app/communications/eventBus';
-import { XY } from '../app/types/base';
+import { XY } from '../app/types/utils';
 
 const mockEmit = eventBus.emit as unknown as ReturnType<typeof vi.fn>;
 

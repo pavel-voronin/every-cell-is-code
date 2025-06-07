@@ -1,5 +1,5 @@
 import { signalBus } from '../../communications/signalBus';
-import { XY } from '../../types/base';
+import { XY } from '../../types/utils';
 import { ISignalsInputComponent } from '../../types/blockComponents';
 import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';

@@ -1,7 +1,7 @@
 import { eventBus } from './communications/eventBus';
 import { MetaManager } from './metaManager';
 import { TupleMap } from './structures/tuppleMap';
-import { XY } from './types/base';
+import { XY } from './types/utils';
 import { Block } from './blocks/block';
 
 export class BlockManager {

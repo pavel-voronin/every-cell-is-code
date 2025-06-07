@@ -1,5 +1,5 @@
 import { CHUNK_SIZE } from './constants';
-import { XY } from './types/base';
+import { XY } from './types/utils';
 import { BlockConfig } from './types/blocks';
 import { Chunk } from './types/blocks';
 import { eventBus } from './communications/eventBus';

@@ -3,7 +3,7 @@ import { MetaManager } from './metaManager';
 import { GridManager } from './gridManager';
 import { eventBus } from './communications/eventBus';
 import { DEFAULT_COORDS } from './constants';
-import { XY } from './types/base';
+import { XY } from './types/utils';
 
 export class App {
   protected gridManager: GridManager;

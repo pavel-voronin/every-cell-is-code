@@ -1,6 +1,6 @@
 import { eventBus } from '../communications/eventBus';
 import { CELL_SIZE } from '../constants';
-import { XY } from '../types/base';
+import { XY } from '../types/utils';
 import {
   IContainerComponent,
   IFrontendComponent,
