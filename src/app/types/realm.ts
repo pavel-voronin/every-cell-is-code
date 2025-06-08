@@ -4,16 +4,23 @@ type SemVer =
   | `${number}.${number}`
   | `${number}.${number}.${number}`;
 
-// todo: auth
-export type Realm = {
-  id: string;
+type BlockDescriptor =
+  | SemVer
+  | {
+      version: SemVer;
+      [key: string]: unknown;
+    };
+
+type RealmSchemaV1 = {
+  schemaVersion: SemVer;
   name: string;
   description: string;
-  version: SemVer;
   apiUrl: string;
-  features?: Record<string, SemVer>;
+  supportedBlocks: Record<string, BlockDescriptor>;
   settings?: {
     offsetX?: number;
     offsetY?: number;
   };
 };
+
+export type RealmSchema = RealmSchemaV1;
