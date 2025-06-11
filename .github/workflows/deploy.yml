@@ -1,4 +1,4 @@
-name: Github Pages Deploy
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -15,17 +15,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy_to_pages.outputs.github_pages_url }}
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Vite Github Pages Deployer
-        uses: skywarth/vite-github-pages-deployer@master
-        id: deploy_to_pages
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          debug_mode: true
-          working_path: ./apps/frontend
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build --workspace=frontend -- --base=/every-cell-is-code
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./apps/frontend/dist
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+        id: deploy
