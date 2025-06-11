@@ -1,20 +1,13 @@
 {
   "name": "every-cell-is-code",
-  "version": "0.0.97",
-  "description": "An infinite canvas where every cell is a live JavaScript worker",
   "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
-    "prepare": "husky",
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest run"
+    "prepare": "husky"
   },
-  "author": {
-    "name": "Pavel Voronin",
-    "url": "https://github.com/pavel-voronin"
-  },
-  "license": "MIT",
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
@@ -37,11 +30,5 @@
       "eslint --fix",
       "prettier --write --ignore-unknown"
     ]
-  },
-  "preloadChunks": [
-    [
-      0,
-      0
-    ]
-  ]
+  }
 }

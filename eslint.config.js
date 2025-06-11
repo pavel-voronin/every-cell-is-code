@@ -15,7 +15,7 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
-    ignores: ['dist/**'],
+    ignores: ['apps/*/dist/**', 'apps/*/coverage/**'],
   },
   tseslint.configs.recommended,
   {

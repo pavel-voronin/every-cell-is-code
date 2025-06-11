@@ -28,3 +28,4 @@ jobs:
         id: deploy_to_pages
         with:
           debug_mode: true
+          working_path: ./apps/frontend
