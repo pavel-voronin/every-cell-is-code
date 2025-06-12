@@ -1,2 +1,2 @@
 npx lint-staged
-npm run --workspaces test
+npm run --workspace frontend test
