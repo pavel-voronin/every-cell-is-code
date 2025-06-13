@@ -36,8 +36,7 @@ type RealmSchemaV1 = {
   supportedBlocks: Record<string, BlockDescriptor>;
   layers: [ChunkLayer, ...([AggregateLayer] | [])];
   settings?: {
-    offsetX?: number;
-    offsetY?: number;
+    settingName: string;
   };
 };
 
