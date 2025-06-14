@@ -10,20 +10,22 @@ app.get('/connect', (c) => {
     name: 'Example Realm',
     description: 'An example realm for demonstration purposes.',
     apiUrl: 'http://api.example.com/realm',
-    supportedBlocks: {
-      imageFrontend: 1,
-      workerBackend: '1.',
+    blocks: {
+      frontend: {
+        image: 1,
+        canvas: 1,
+      },
+      backend: {
+        worker: '1',
+      },
     },
     layers: [
       {
         index: 0,
-        name: 'Chunk Layer',
         type: 'grid',
-        cellSize: 16,
       },
       {
         index: 1,
-        name: 'Aggregate Layer',
         type: 'aggregate',
         covers: { layer: 0, width: 16, height: 16 },
         presence: 'bitmask',

@@ -11,16 +11,13 @@ type BlockDescriptor =
       [key: string]: unknown;
     };
 
-type ChunkLayer = {
+type GridLayer = {
   index: 0;
-  name: string;
   type: 'grid';
-  cellSize: number;
 };
 
 type AggregateLayer = {
   index: Exclude<number, 0>;
-  name: string;
   type: 'aggregate';
   covers: { layer: number; width: number; height: number };
   offset?: { x: number; y: number };
@@ -33,8 +30,14 @@ type RealmSchemaV1 = {
   name: string;
   description: string;
   apiUrl: string;
-  supportedBlocks: Record<string, BlockDescriptor>;
-  layers: [ChunkLayer, ...([AggregateLayer] | [])];
+  blocks: {
+    frontend?: Record<string, BlockDescriptor>;
+    backend?: Record<string, BlockDescriptor>;
+    container?: Record<string, BlockDescriptor>;
+    events?: Record<string, BlockDescriptor>;
+    signals?: Record<string, BlockDescriptor>;
+  };
+  layers: [GridLayer, ...([AggregateLayer] | [])];
   settings?: {
     settingName: string;
   };
