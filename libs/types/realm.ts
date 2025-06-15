@@ -11,17 +11,10 @@ type BlockDescriptor =
       [key: string]: unknown;
     };
 
-type GridLayer = {
-  index: 0;
-  type: 'grid';
-};
-
-type AggregateLayer = {
-  index: Exclude<number, 0>;
-  type: 'aggregate';
-  covers: { layer: number; width: number; height: number };
+type Layer = {
+  covers: { width: number; height: number };
   offset?: { x: number; y: number };
-  presence?: 'bitmask' | 'bloom' | 'none';
+  presence: 'full' | 'bitmask' | 'bloom';
   subscribe?: 'poll' | 'websocket' | 'sse' | 'none';
 };
 
@@ -29,7 +22,6 @@ type RealmSchemaV1 = {
   schemaVersion: SemVer;
   name: string;
   description: string;
-  apiUrl: string;
   blocks: {
     frontend?: Record<string, BlockDescriptor>;
     backend?: Record<string, BlockDescriptor>;
@@ -37,7 +29,7 @@ type RealmSchemaV1 = {
     events?: Record<string, BlockDescriptor>;
     signals?: Record<string, BlockDescriptor>;
   };
-  layers: [GridLayer, ...([AggregateLayer] | [])];
+  layers: Layer[];
   settings?: {
     settingName: string;
   };

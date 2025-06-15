@@ -1,15 +1,28 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import type { RealmSchema } from '@every-cell-is-code/types';
+import type { Block, Chunk, RealmSchema } from '@every-cell-is-code/types';
+import { configuration } from '../config/main.js';
 
 const app = new Hono();
+
+app.get(`/blocks/:x/:y`, (c) => {
+  const x = c.req.param('x');
+  const y = c.req.param('y');
+  return c.json<Block>({ x, y });
+});
+
+app.get(`/chunks/:layerId/:x/:y`, (c) => {
+  const x = c.req.param('x');
+  const y = c.req.param('y');
+  return c.json<Chunk>({ x, y });
+});
 
 app.get('/connect', (c) => {
   const schema: RealmSchema = {
     schemaVersion: 1,
-    name: 'Example Realm',
-    description: 'An example realm for demonstration purposes.',
-    apiUrl: 'http://api.example.com/realm',
+    name: configuration.name,
+    description: configuration.description,
+    // todo: compile time
     blocks: {
       frontend: {
         image: 1,
@@ -19,19 +32,7 @@ app.get('/connect', (c) => {
         worker: '1',
       },
     },
-    layers: [
-      {
-        index: 0,
-        type: 'grid',
-      },
-      {
-        index: 1,
-        type: 'aggregate',
-        covers: { layer: 0, width: 16, height: 16 },
-        presence: 'bitmask',
-        subscribe: 'websocket',
-      },
-    ],
+    layers: configuration.layers,
   };
 
   return c.json(schema);
