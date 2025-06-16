@@ -2,14 +2,28 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import type { Block, Chunk, RealmSchema } from '@every-cell-is-code/types';
 import { configuration } from '../config/main.js';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod/v4';
 
 const app = new Hono();
 
-app.get(`/blocks/:x/:y`, (c) => {
-  const x = c.req.param('x');
-  const y = c.req.param('y');
-  return c.json<Block>({ x, y });
-});
+app.get(
+  `/blocks/:x/:y`,
+  zValidator(
+    'param',
+    z.object({
+      x: z.coerce.number().pipe(z.int()),
+      y: z.coerce.number().pipe(z.int()),
+    }),
+  ),
+  (c) => {
+    const params = c.req.valid('param');
+
+    const { x, y } = params;
+
+    return c.json<Block>({ x, y });
+  },
+);
 
 app.get(`/chunks/:layerId/:x/:y`, (c) => {
   const x = c.req.param('x');
