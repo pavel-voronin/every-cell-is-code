@@ -25,11 +25,26 @@ app.get(
   },
 );
 
-app.get(`/chunks/:layerId/:x/:y`, (c) => {
-  const x = c.req.param('x');
-  const y = c.req.param('y');
-  return c.json<Chunk>({ x, y });
-});
+app.get(
+  `/chunks/:layerId/:x/:y`,
+  zValidator(
+    'param',
+    z.object({
+      layerId: z.coerce.number().pipe(z.int()),
+      x: z.coerce.number().pipe(z.int()),
+      y: z.coerce.number().pipe(z.int()),
+    }),
+  ),
+  (c) => {
+    const params = c.req.valid('param');
+
+    const layerId = params.layerId;
+    const x = params.x;
+    const y = params.y;
+
+    return c.json<Chunk>({ layerId, x, y });
+  },
+);
 
 app.get('/connect', (c) => {
   const schema: RealmSchema = {
