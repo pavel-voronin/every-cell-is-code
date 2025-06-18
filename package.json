@@ -7,7 +7,12 @@
     "libs/*"
   ],
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "infra:start": "docker-compose -f infrastructure/docker-compose.yml up -d",
+    "infra:stop": "docker-compose -f infrastructure/docker-compose.yml down",
+    "infra:clear": "docker-compose -f infrastructure/docker-compose.yml down -v",
+    "infra:logs": "docker-compose -f infrastructure/docker-compose.yml logs -f",
+    "dev:backend": "npm run infra:start && npm run dev --workspace backend"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

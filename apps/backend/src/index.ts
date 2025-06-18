@@ -1,9 +1,10 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import type { Block, Chunk, RealmSchema } from '@every-cell-is-code/types';
+import type { Chunk, RealmSchema } from '@every-cell-is-code/types';
 import { configuration } from '../config/main.js';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod/v4';
+import { getBlockUrl } from './services/s3.js';
 
 const app = new Hono();
 
@@ -21,7 +22,7 @@ app.get(
 
     const { x, y } = params;
 
-    return c.json<Block>({ x, y });
+    return c.text(getBlockUrl(x, y)); // temporary solution, just demonstration purpose
   },
 );
 

@@ -1,0 +1,21 @@
+{
+  "x": 6,
+  "y": 1,
+  "w": 1,
+  "h": 1,
+  "frontend": {
+    "type": "image",
+    "resource": {
+      "type": "image",
+      "url": "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaWQ2Z290YWMwYm5neXZjM25mc200cGF1Y24wZDlndHJmbnE4eGlpMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1QfjQKX3fZ7lgrGOiE/giphy.gif"
+    },
+    "aspect": "fit"
+  },
+  "backend": {
+    "type": "none"
+  },
+  "input": {
+    "events": {}
+  },
+  "status": {}
+}

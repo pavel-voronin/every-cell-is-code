@@ -1,0 +1,50 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web Console
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  init-minio:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    volumes:
+      - ./minio/blocks-storage:/source-blocks:ro
+      - ./scripts:/scripts:ro
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Waiting for MinIO to start...';
+      sleep 15;
+
+      echo 'Setting up MinIO alias...';
+      /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin123;
+
+      echo 'Creating buckets...';
+      /usr/bin/mc mb local/blocks-storage --ignore-existing;
+
+      echo 'Setting bucket policies...';
+      /usr/bin/mc anonymous set download local/blocks-storage;
+
+      echo 'Uploading blocks...';
+      /usr/bin/mc cp --recursive /source-blocks/ local/blocks-storage/;
+
+      echo 'MinIO initialization completed!';
+      exit 0;
+      "
+    restart: "no"
+
+volumes:
+  minio-data:
