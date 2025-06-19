@@ -8,9 +8,7 @@ export type ImageResourceSchema = z.infer<typeof ImageResourceSchema>;
 
 export const WorkerResourceSchema = z.object({
   type: z.literal('worker'),
-  file: z.string(),
   url: z.string(),
-  template: z.string(),
 });
 export type WorkerResourceSchema = z.infer<typeof WorkerResourceSchema>;
 

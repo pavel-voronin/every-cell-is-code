@@ -5,6 +5,7 @@ import { Chunk } from './types/blocks';
 import { eventBus } from './communications/eventBus';
 import { TupleMap } from './structures/tuppleMap';
 import knownChunks from './knownChunks';
+import { config } from './config/main';
 
 enum ChunkStatus {
   Loading = 'loading',
@@ -70,7 +71,7 @@ export class MetaManager {
     }
 
     this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Loading);
-    const url = `./meta/chunk_${chunkX}_${chunkY}.json`;
+    const url = this.getChunkUrl(chunkX, chunkY);
     await fetch(url)
       .then(async (res) => {
         if (!res.ok) {
@@ -85,6 +86,10 @@ export class MetaManager {
         this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
         throw err;
       });
+  }
+
+  private getChunkUrl(chunkX: number, chunkY: number) {
+    return `${config.apiUrl}/${config.chunkPrefix}${chunkX}_${chunkY}${config.chunkPostfix}`;
   }
 
   loadChunkData(chunkXY: XY, data: unknown) {

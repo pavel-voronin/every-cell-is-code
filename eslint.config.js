@@ -19,7 +19,7 @@ export default defineConfig([
   },
   tseslint.configs.recommended,
   {
-    files: ['**/blocks/*.js'],
+    files: ['**/minio/code/*.js'],
     rules: {
       '@typescript-eslint/no-unused-vars': 'off',
     },
@@ -30,12 +30,6 @@ export default defineConfig([
         width: 'readonly',
         height: 'readonly',
       },
-    },
-  },
-  {
-    files: ['**/blocks/templates/*.js'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
   eslintConfigPrettier,

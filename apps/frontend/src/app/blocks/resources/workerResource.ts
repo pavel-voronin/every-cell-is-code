@@ -1,3 +1,9 @@
+import { config } from '../../config/main';
+
 export class WorkerResource {
-  constructor(public readonly url: string) {}
+  public readonly url: string;
+
+  constructor(url: string) {
+    this.url = `${config.apiUrl}${config.codePrefix}${url}`;
+  }
 }

@@ -1,6 +1,6 @@
 {
-  "x": 2,
-  "y": 3,
+  "x": 1,
+  "y": 2,
   "w": 1,
   "h": 1,
   "frontend": {
@@ -10,13 +10,15 @@
     "type": "worker",
     "resource": {
       "type": "worker",
-      "template": "v1",
-      "file": "./block_2_3.js",
-      "url": "./blocks/block_2_3.dist.js"
+      "url": "1_2.js"
     }
   },
   "input": {
-    "events": {}
+    "events": {
+      "pointerdown": true
+    }
   },
-  "status": {}
+  "status": {
+    "moderation": "nsfw"
+  }
 }

@@ -10,9 +10,7 @@
     "type": "worker",
     "resource": {
       "type": "worker",
-      "template": "v1",
-      "file": "./block_3_2.js",
-      "url": "./blocks/block_3_2.dist.js"
+      "url": "3_2.js"
     }
   },
   "input": {

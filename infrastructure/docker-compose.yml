@@ -22,24 +22,31 @@ services:
     depends_on:
       - minio
     volumes:
-      - ./minio/blocks-storage:/source-blocks:ro
-      - ./scripts:/scripts:ro
+      - ./minio/blocks:/source-blocks:ro
+      - ./minio/code:/source-code:ro
+      - ./minio/chunks:/source-chunks:ro
     entrypoint: >
       /bin/sh -c "
       echo 'Waiting for MinIO to start...';
-      sleep 15;
+      sleep 5;
 
       echo 'Setting up MinIO alias...';
       /usr/bin/mc alias set local http://minio:9000 minioadmin minioadmin123;
 
       echo 'Creating buckets...';
-      /usr/bin/mc mb local/blocks-storage --ignore-existing;
+      /usr/bin/mc mb local/blocks --ignore-existing;
+      /usr/bin/mc mb local/code --ignore-existing;
+      /usr/bin/mc mb local/chunks --ignore-existing;
 
       echo 'Setting bucket policies...';
-      /usr/bin/mc anonymous set download local/blocks-storage;
+      /usr/bin/mc anonymous set download local/blocks;
+      /usr/bin/mc anonymous set download local/code;
+      /usr/bin/mc anonymous set download local/chunks;
 
       echo 'Uploading blocks...';
-      /usr/bin/mc cp --recursive /source-blocks/ local/blocks-storage/;
+      /usr/bin/mc cp --recursive /source-blocks/ local/blocks/;
+      /usr/bin/mc cp --recursive /source-code/ local/code/;
+      /usr/bin/mc cp --recursive /source-chunks/ local/chunks/;
 
       echo 'MinIO initialization completed!';
       exit 0;
