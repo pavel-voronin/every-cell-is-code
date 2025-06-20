@@ -30,8 +30,9 @@ type RealmSchemaV1 = {
     signals?: Record<string, BlockDescriptor>;
   };
   layers: Layer[];
-  settings?: {
-    settingName: string;
+  start?: {
+    x: number;
+    y: number;
   };
 };
 

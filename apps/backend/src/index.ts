@@ -63,9 +63,10 @@ app.get('/connect', (c) => {
       },
     },
     layers: configuration.layers,
+    start: { x: 3, y: 3 },
   };
 
-  return c.json(schema);
+  return c.json<RealmSchema>(schema);
 });
 
 serve(
