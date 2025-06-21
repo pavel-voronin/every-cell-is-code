@@ -6,16 +6,43 @@ import { Block } from '../block';
 import { BaseComponent } from '../baseComponent';
 import { resourceLoader } from '../resources/resourceLoader';
 
+// TEMPORARY!
+// TODO REMOVE
+export async function createCrossOriginWorker(
+  workerUrl: string,
+): Promise<Worker> {
+  try {
+    const response = await fetch(workerUrl);
+    const workerCode = await response.text();
+
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    const blobUrl = URL.createObjectURL(blob);
+
+    const worker = new Worker(blobUrl);
+
+    URL.revokeObjectURL(blobUrl);
+
+    return worker;
+  } catch (error) {
+    console.error('Error while creating cross-origin Worker:', error);
+    throw error;
+  }
+}
+
 export class WorkerBackend extends BaseComponent implements IBackendComponent {
-  worker: Worker;
+  worker!: Worker;
 
   constructor(readonly block: Block) {
     super(block);
+    this.init();
+  }
 
+  private async init() {
     const config = this.block.config.backend as WorkerBackendConfig;
     const resource = resourceLoader(config.resource);
 
-    this.worker = new Worker(resource.url);
+    // this.worker = new Worker(resource.url);
+    this.worker = await createCrossOriginWorker(resource.url);
 
     this.initializeWorkerEventListeners();
 
