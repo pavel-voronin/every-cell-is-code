@@ -1,14 +1,14 @@
-import { eventBus } from '../communications/eventBus';
-import { CELL_SIZE } from '../constants';
-import { XY } from '../types/utils';
+import { eventBus } from '../../communications/eventBus';
+import { CELL_SIZE } from '../../constants';
+import { XY } from '../../types/utils';
 import {
   IContainerComponent,
   IFrontendComponent,
-} from '../types/blockComponents';
-import { Block } from './block';
-import { BaseComponent } from './baseComponent';
+} from '../../types/blockComponents';
+import { Block } from '../block';
+import { BaseComponent } from '../baseComponent';
 
-export class Container extends BaseComponent implements IContainerComponent {
+export class DivContainer extends BaseComponent implements IContainerComponent {
   container: HTMLDivElement;
   scale: number = 1;
 

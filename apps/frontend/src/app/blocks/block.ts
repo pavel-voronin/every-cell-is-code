@@ -11,7 +11,7 @@ import {
   IEventsInputComponent,
   ISignalsInputComponent,
 } from '../types/blockComponents';
-import { Container } from './container';
+import { DivContainer } from './container/divContainer';
 import { CanvasFrontend } from './frontend/canvasFrontend';
 import { ImageFrontend } from './frontend/imageFrontend';
 import { EventsInput } from './input/eventsInput';
@@ -61,7 +61,11 @@ export class Block {
   }
 
   protected initContainer() {
-    this.container = new Container(this);
+    if (this.state.container === 'div') {
+      this.container = new DivContainer(this);
+    } else {
+      // 'iframe'
+    }
   }
 
   protected initEventsInput() {
@@ -152,6 +156,7 @@ export class Block {
   computeBlockComponentLayout() {
     if (this.status.moderation === 'nsfw') {
       this.state = {
+        container: 'div',
         frontend: 'nsfw',
         backend: 'none',
         events: 'nsfw',
@@ -159,6 +164,7 @@ export class Block {
       };
     } else if (this.status.moderation === 'banned') {
       this.state = {
+        container: 'div',
         frontend: 'banned',
         backend: 'none',
         events: 'none',
@@ -166,6 +172,7 @@ export class Block {
       };
     } else if (this.status.runtime === 'terminated') {
       this.state = {
+        container: 'div',
         frontend: 'terminated',
         backend: 'none',
         events: 'none',
@@ -173,6 +180,7 @@ export class Block {
       };
     } else if (this.status.published === 'draft') {
       this.state = {
+        container: 'div',
         frontend: 'draft',
         backend: 'none',
         events: 'none',
@@ -180,6 +188,7 @@ export class Block {
       };
     } else {
       this.state = {
+        container: 'div',
         frontend: 'default',
         backend: 'default',
         events: 'default',

@@ -88,6 +88,7 @@ export const Chunk = z.array(BlockConfig);
 export type Chunk = z.infer<typeof Chunk>;
 
 export const BlockComponentLayout = z.object({
+  container: z.enum(['div', 'iframe']).default('div'),
   frontend: z
     .enum(['default', 'nsfw', 'terminated', 'draft', 'banned'])
     .default('default'),
