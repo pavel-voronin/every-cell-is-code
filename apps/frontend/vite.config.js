@@ -16,6 +16,7 @@ export default defineConfig({
   plugins: [
     {
       name: 'get-chunks-and-code',
+      apply: 'build',
       async buildStart() {
         const infrastructureChunksDir = '../../infrastructure/minio/chunks';
         const infrastructureCodeDir = '../../infrastructure/minio/code';
@@ -94,6 +95,15 @@ export default defineConfig({
           .join('\n');
 
         return code.replace(`"__PRELOAD_CHUNKS__";`, chunkCalls);
+      },
+    },
+    {
+      name: 'watch-blocks',
+      apply: 'serve',
+      handleHotUpdate({ file, server }) {
+        if (file.startsWith(server.config.root + '/public')) {
+          server.restart();
+        }
       },
     },
   ],
