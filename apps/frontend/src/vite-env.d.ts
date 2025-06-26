@@ -6,9 +6,6 @@ interface ViteTypeOptions {
 
 interface ImportMetaEnv {
   readonly VITE_API_URL: string;
-  readonly VITE_CHUNK_POSTFIX: string;
-  readonly VITE_CHUNK_PREFIX: string;
-  readonly VITE_CODE_PREFIX: string;
 }
 
 interface ImportMeta {

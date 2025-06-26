@@ -29,8 +29,6 @@ export class App {
 
     this.blockManager = new BlockManager(this.metaManager);
 
-    ('__PRELOAD_CHUNKS__'); // eslint-disable-line @typescript-eslint/no-unused-expressions
-
     const initialCoords = this.getCoordsFromHash() ?? DEFAULT_COORDS;
     this.gridManager = new GridManager(canvas, initialCoords);
 

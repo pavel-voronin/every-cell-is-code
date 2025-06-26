@@ -4,11 +4,7 @@ export default defineConfig({
   test: {
     coverage: {
       include: ['src/**'],
-      exclude: [
-        'src/public/**',
-        'src/app/knownChunks.ts',
-        ...coverageConfigDefaults.exclude,
-      ],
+      exclude: ['src/public/**', ...coverageConfigDefaults.exclude],
     },
   },
 });

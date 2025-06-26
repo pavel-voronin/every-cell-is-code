@@ -4,6 +4,6 @@ export class WorkerResource {
   public readonly url: string;
 
   constructor(url: string) {
-    this.url = `${config.apiUrl}${config.codePrefix}${url}`;
+    this.url = `${config.apiUrl}code/${url}`;
   }
 }

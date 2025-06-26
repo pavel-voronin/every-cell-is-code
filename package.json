@@ -12,7 +12,8 @@
     "infra:stop": "docker-compose -f infrastructure/docker-compose.yml down",
     "infra:clear": "docker-compose -f infrastructure/docker-compose.yml down -v",
     "infra:logs": "docker-compose -f infrastructure/docker-compose.yml logs -f",
-    "dev:backend": "npm run infra:start && npm run dev --workspace backend"
+    "dev:backend": "npm run infra:start && npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",

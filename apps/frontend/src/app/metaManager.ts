@@ -4,7 +4,6 @@ import { BlockConfig } from './types/blocks';
 import { Chunk } from './types/blocks';
 import { eventBus } from './communications/eventBus';
 import { TupleMap } from './structures/tuppleMap';
-import knownChunks from './knownChunks';
 import { config } from './config/main';
 
 enum ChunkStatus {
@@ -64,12 +63,6 @@ export class MetaManager {
     if (status === ChunkStatus.Loaded) return;
     if (status === ChunkStatus.Loading) return;
 
-    // Check if chunk is known
-    if (!knownChunks.has([chunkX, chunkY])) {
-      this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Error);
-      return;
-    }
-
     this.chunkStatuses.set([chunkX, chunkY], ChunkStatus.Loading);
     const url = this.getChunkUrl(chunkX, chunkY);
     await fetch(url)
@@ -89,7 +82,7 @@ export class MetaManager {
   }
 
   private getChunkUrl(chunkX: number, chunkY: number) {
-    return `${config.apiUrl}/${config.chunkPrefix}${chunkX}_${chunkY}${config.chunkPostfix}`;
+    return `${config.apiUrl}chunks/${chunkX}_${chunkY}.json`;
   }
 
   loadChunkData(chunkXY: XY, data: unknown) {
