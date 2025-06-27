@@ -4,11 +4,13 @@ import { GridManager } from './gridManager';
 import { eventBus } from './communications/eventBus';
 import { DEFAULT_COORDS } from './constants';
 import { XY } from './types/utils';
+import { RealmManager } from './realmManager';
 
 export class App {
   protected gridManager: GridManager;
   protected metaManager = new MetaManager();
   protected blockManager: BlockManager;
+  protected realmManager: RealmManager;
   private ignoreNextHashChange = false;
 
   constructor(protected canvas: HTMLCanvasElement) {
@@ -26,6 +28,10 @@ export class App {
     window.dispatchEvent(new Event('resize'));
 
     // App specific preparations
+
+    this.realmManager = new RealmManager();
+    this.realmManager.addDefaultRealms();
+    this.realmManager.loadRealm(this.realmManager.listRealms()[0]);
 
     this.blockManager = new BlockManager(this.metaManager);
 

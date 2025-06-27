@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import type { Chunk, RealmSchema } from '@every-cell-is-code/types';
 import { configuration } from '../config/main.js';
 import { zValidator } from '@hono/zod-validator';
@@ -7,6 +8,9 @@ import { z } from 'zod/v4';
 import { getBlockUrl } from './services/s3.js';
 
 const app = new Hono();
+
+// Enable CORS for all routes and origins (temporary solution)
+app.use('*', cors({ origin: '*' }));
 
 app.get(
   `/blocks/:x/:y`,
@@ -63,7 +67,7 @@ app.get('/connect', (c) => {
       },
     },
     layers: configuration.layers,
-    start: { x: 3, y: 3 },
+    apiUrl: configuration.publicUrl,
   };
 
   return c.json<RealmSchema>(schema);

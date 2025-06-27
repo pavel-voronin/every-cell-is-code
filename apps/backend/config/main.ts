@@ -3,6 +3,7 @@ import type { Configuration } from '../types/configuration.js';
 export const configuration: Configuration = {
   name: 'Example Realm',
   description: 'An example realm for demonstration purposes.',
+  publicUrl: 'http://localhost:3000',
   layers: [
     {
       covers: { width: 16, height: 16 },

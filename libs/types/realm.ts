@@ -19,9 +19,11 @@ type Layer = {
 };
 
 type RealmSchemaV1 = {
+  // meta
   schemaVersion: SemVer;
   name: string;
   description: string;
+  // structure
   blocks: {
     frontend?: Record<string, BlockDescriptor>;
     backend?: Record<string, BlockDescriptor>;
@@ -30,10 +32,8 @@ type RealmSchemaV1 = {
     signals?: Record<string, BlockDescriptor>;
   };
   layers: Layer[];
-  start?: {
-    x: number;
-    y: number;
-  };
+  // communication (tbd)
+  apiUrl: string;
 };
 
 export type RealmSchema = RealmSchemaV1;
