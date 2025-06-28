@@ -1,39 +1,43 @@
-type SemVer =
-  | number
-  | `${number}`
-  | `${number}.${number}`
-  | `${number}.${number}.${number}`;
+import { z } from 'zod/v4';
 
-type BlockDescriptor =
-  | SemVer
-  | {
-      version: SemVer;
-      [key: string]: unknown;
-    };
+export const SemVer = z.union([
+  z.number(),
+  z.string().regex(new RegExp(/^(\d+|\d+\.\d+|\d+\.\d+\.\d+)$/)),
+]);
+export type SemVer = z.infer<typeof SemVer>;
 
-type Layer = {
-  covers: { width: number; height: number };
-  offset?: { x: number; y: number };
-  presence: 'full' | 'bitmask' | 'bloom';
-  subscribe?: 'poll' | 'websocket' | 'sse' | 'none';
-};
+export const BlockDescriptor = z.union([
+  SemVer,
+  z.object({ version: SemVer }).catchall(z.unknown()),
+]);
+export type BlockDescriptor = z.infer<typeof BlockDescriptor>;
 
-type RealmSchemaV1 = {
+export const Layer = z.object({
+  covers: z.object({ width: z.number(), height: z.number() }),
+  offset: z.optional(z.object({ x: z.number(), y: z.number() })),
+  presence: z.enum(['full', 'bitmask', 'bloom']),
+  subscribe: z.optional(z.enum(['poll', 'websocket', 'sse', 'none'])),
+});
+export type Layer = z.infer<typeof Layer>;
+
+export const RealmSchemaV1 = z.object({
   // meta
-  schemaVersion: SemVer;
-  name: string;
-  description: string;
+  schemaVersion: SemVer,
+  name: z.string(),
+  description: z.string(),
   // structure
-  blocks: {
-    frontend?: Record<string, BlockDescriptor>;
-    backend?: Record<string, BlockDescriptor>;
-    container?: Record<string, BlockDescriptor>;
-    events?: Record<string, BlockDescriptor>;
-    signals?: Record<string, BlockDescriptor>;
-  };
-  layers: Layer[];
+  blocks: z.object({
+    frontend: z.record(z.string(), BlockDescriptor).optional(),
+    backend: z.record(z.string(), BlockDescriptor).optional(),
+    container: z.record(z.string(), BlockDescriptor).optional(),
+    events: z.record(z.string(), BlockDescriptor).optional(),
+    signals: z.record(z.string(), BlockDescriptor).optional(),
+  }),
+  layers: z.array(Layer),
   // communication (tbd)
-  apiUrl: string;
-};
+  apiUrl: z.string(),
+});
+export type RealmSchemaV1 = z.infer<typeof RealmSchemaV1>;
 
-export type RealmSchema = RealmSchemaV1;
+export const RealmSchema = RealmSchemaV1;
+export type RealmSchema = z.infer<typeof RealmSchema>;

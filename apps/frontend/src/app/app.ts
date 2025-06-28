@@ -5,6 +5,7 @@ import { eventBus } from './communications/eventBus';
 import { DEFAULT_COORDS } from './constants';
 import { XY } from './types/utils';
 import { RealmManager } from './realmManager';
+import { config } from './config/main';
 
 export class App {
   protected gridManager: GridManager;
@@ -30,8 +31,9 @@ export class App {
     // App specific preparations
 
     this.realmManager = new RealmManager();
-    this.realmManager.addDefaultRealms();
-    this.realmManager.loadRealm(this.realmManager.listRealms()[0]);
+    config.defaultRealms?.forEach((realm) => {
+      this.realmManager.addRealm(realm).connect();
+    });
 
     this.blockManager = new BlockManager(this.metaManager);
 

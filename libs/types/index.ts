@@ -1,3 +1,3 @@
-export type { RealmSchema } from './realm.ts';
-export type { Chunk } from './chunk.ts';
-export type { Block } from './block.ts';
+export * from './realm.ts';
+export * from './chunk.ts';
+export * from './block.ts';
