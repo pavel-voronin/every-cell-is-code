@@ -82,7 +82,7 @@ export class MetaManager {
   }
 
   private getChunkUrl(chunkX: number, chunkY: number) {
-    return `${config.apiUrl}chunks/${chunkX}_${chunkY}.json`;
+    return `${config.realmUrl}chunks/${chunkX}_${chunkY}.json`;
   }
 
   loadChunkData(chunkXY: XY, data: unknown) {

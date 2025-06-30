@@ -4,14 +4,14 @@ import { GridManager } from './gridManager';
 import { eventBus } from './communications/eventBus';
 import { DEFAULT_COORDS } from './constants';
 import { XY } from './types/utils';
-import { RealmManager } from './realmManager';
 import { config } from './config/main';
+import { Realm } from './realm';
 
 export class App {
   protected gridManager: GridManager;
   protected metaManager = new MetaManager();
   protected blockManager: BlockManager;
-  protected realmManager: RealmManager;
+  protected realm: Realm;
   private ignoreNextHashChange = false;
 
   constructor(protected canvas: HTMLCanvasElement) {
@@ -30,10 +30,8 @@ export class App {
 
     // App specific preparations
 
-    this.realmManager = new RealmManager();
-    config.defaultRealms?.forEach((realm) => {
-      this.realmManager.addRealm(realm).connect();
-    });
+    this.realm = new Realm(config.realmUrl);
+    this.realm.connect();
 
     this.blockManager = new BlockManager(this.metaManager);
 
