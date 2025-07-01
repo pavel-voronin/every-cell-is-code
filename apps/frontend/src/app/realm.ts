@@ -18,6 +18,7 @@ export class Realm {
       console.log(`Realm connected successfully.`);
     } catch (error) {
       console.error(`Error loading realm from ${this.url}:`, error);
+      throw error;
     }
   }
 

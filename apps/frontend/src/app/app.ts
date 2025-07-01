@@ -7,14 +7,19 @@ import { XY } from './types/utils';
 import { config } from './config/main';
 import { Realm } from './realm';
 
+type AppState = 'not initialized' | 'initialized';
+
 export class App {
-  protected gridManager: GridManager;
+  protected state: AppState = 'not initialized';
+  protected gridManager!: GridManager;
   protected metaManager = new MetaManager();
-  protected blockManager: BlockManager;
-  protected realm: Realm;
+  protected blockManager!: BlockManager;
+  protected realm!: Realm;
   private ignoreNextHashChange = false;
 
-  constructor(protected canvas: HTMLCanvasElement) {
+  constructor(protected canvas: HTMLCanvasElement) {}
+
+  async init(): Promise<void> {
     // Browser specific preparations
 
     this.stopTouchEvents();
@@ -31,12 +36,12 @@ export class App {
     // App specific preparations
 
     this.realm = new Realm(config.realmUrl);
-    this.realm.connect();
+    await this.realm.connect();
 
     this.blockManager = new BlockManager(this.metaManager);
 
     const initialCoords = this.getCoordsFromHash() ?? DEFAULT_COORDS;
-    this.gridManager = new GridManager(canvas, initialCoords);
+    this.gridManager = new GridManager(this.canvas, initialCoords);
 
     eventBus.on('grid:center-changed', ([x, y]: XY) => {
       const hash = `#x=${x}&y=${y}`;
@@ -58,6 +63,8 @@ export class App {
         this.gridManager.moveTo(coords);
       }
     });
+
+    this.state = 'initialized';
   }
 
   protected getCoordsFromHash(): XY | undefined {
@@ -94,5 +101,13 @@ export class App {
       passive: false,
       capture: true,
     });
+  }
+
+  public getState(): AppState {
+    return this.state;
+  }
+
+  public setState(state: AppState): void {
+    this.state = state;
   }
 }
