@@ -1,0 +1,6 @@
+{
+  "name": "frontend-vue",
+  "type": "module",
+  "private": true,
+  "scripts": {}
+}
