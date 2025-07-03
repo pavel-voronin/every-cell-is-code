@@ -3,9 +3,13 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "oxc.enable": true,
   "cSpell.words": [
     "commitlint",
     "interceptable",
+    "oxlint",
     "Pavel",
     "pointerdown",
     "Renderable",
