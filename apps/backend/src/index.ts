@@ -51,7 +51,7 @@ app.get(
   },
 );
 
-app.get('/connect', (c) => {
+app.get('/api/connect', (c) => {
   const schema: RealmSchema = {
     schemaVersion: 1,
     name: configuration.name,

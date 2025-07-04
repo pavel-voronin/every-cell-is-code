@@ -1,19 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import InitPage from '@/pages/InitPage.vue'
-import SecondPage from '@/pages/SecondPage.vue'
+import ConnectPage from '@/pages/ConnectPage.vue'
+import MainPage from '@/pages/MainPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: InitPage,
+      name: 'main',
+      component: MainPage,
     },
     {
-      path: '/second',
-      name: 'second',
-      component: SecondPage,
+      path: '/connect',
+      name: 'connect',
+      component: ConnectPage,
     },
   ],
 })
