@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import type { Chunk, RealmSchema } from '@every-cell-is-code/types';
+import type { Chunk, Realm } from '@every-cell-is-code/types';
 import { configuration } from '../config/main.js';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod/v4';
@@ -12,7 +12,10 @@ const app = new Hono();
 // Enable CORS for all routes and origins (temporary solution)
 app.use('*', cors({ origin: '*' }));
 
-app.get(
+// Create API router with /api prefix
+const apiRouter = new Hono().basePath('/api');
+
+apiRouter.get(
   `/blocks/:x/:y`,
   zValidator(
     'param',
@@ -30,12 +33,12 @@ app.get(
   },
 );
 
-app.get(
-  `/chunks/:layerId/:x/:y`,
+apiRouter.get(
+  `/chunks/:layer/:x/:y`,
   zValidator(
     'param',
     z.object({
-      layerId: z.coerce.number().pipe(z.int()),
+      layer: z.coerce.number().pipe(z.int()),
       x: z.coerce.number().pipe(z.int()),
       y: z.coerce.number().pipe(z.int()),
     }),
@@ -43,16 +46,16 @@ app.get(
   (c) => {
     const params = c.req.valid('param');
 
-    const layerId = params.layerId;
+    const layer = params.layer;
     const x = params.x;
     const y = params.y;
 
-    return c.json<Chunk>({ layerId, x, y });
+    return c.json<Chunk>({ layer, x, y });
   },
 );
 
-app.get('/api/connect', (c) => {
-  const schema: RealmSchema = {
+apiRouter.get('/connect', (c) => {
+  const schema: Realm = {
     schemaVersion: 1,
     name: configuration.name,
     description: configuration.description,
@@ -70,8 +73,11 @@ app.get('/api/connect', (c) => {
     apiUrl: configuration.publicUrl,
   };
 
-  return c.json<RealmSchema>(schema);
+  return c.json<Realm>(schema);
 });
+
+// Mount the API router
+app.route('/', apiRouter);
 
 serve(
   {
